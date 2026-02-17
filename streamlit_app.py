@@ -4,24 +4,20 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-# Configuração direta dos caminhos (sem depender do src.config)
+# Configuração dos caminhos
 BASE_DIR = Path(__file__).parent
-PROCESSED_DATA_DIR = BASE_DIR / "data" / "processed"
-PROCESSED_FILENAME = "amazon_sales_clean.csv"
+DATA_PATH = BASE_DIR / "data" / "processed" / "amazon_sales_clean.csv"
 
 
 @st.cache_data
-def load_processed_data() -> pd.DataFrame:
-    """
-    Carrega o CSV processado diretamente do repositório.
-    """
-    path = PROCESSED_DATA_DIR / PROCESSED_FILENAME
-
-    if not path.exists():
-        st.error(f"Arquivo de dados não encontrado: {path}")
+def load_data():
+    """Carrega os dados processados."""
+    if not DATA_PATH.exists():
+        st.error(f"Arquivo de dados não encontrado: {DATA_PATH}")
+        st.info("Certifique-se de que o arquivo 'amazon_sales_clean.csv' está em 'data/processed/'")
         st.stop()
 
-    df = pd.read_csv(path, parse_dates=["order_date"])
+    df = pd.read_csv(DATA_PATH, parse_dates=["order_date"])
     return df
 
 
@@ -33,15 +29,10 @@ def main():
     )
 
     st.title("🛒 Amazon Sales Analysis")
-    st.markdown(
-        """
-        Dashboard interativo de vendas da Amazon, baseado em dataset público do Kaggle.
-        """
-    )
+    st.markdown("Dashboard interativo de vendas da Amazon")
 
-    # Carregar dados
     try:
-        df = load_processed_data()
+        df = load_data()
     except Exception as e:
         st.error(f"Erro ao carregar dados: {e}")
         st.stop()
@@ -90,7 +81,7 @@ def main():
 
     st.markdown("---")
 
-    # Gráfico 1: Tendência de receita no tempo
+    # Gráfico 1: Tendência de receita
     st.subheader("📈 Tendência de Receita Mensal")
 
     df_temp = df.copy()
@@ -109,7 +100,7 @@ def main():
     ax1.tick_params(axis="x", rotation=45)
     st.pyplot(fig1)
 
-    # Gráfico 2: Top categorias por receita
+    # Gráfico 2: Top categorias
     st.subheader("🏆 Top Categorias por Receita")
 
     top_n = st.slider("Top N categorias", min_value=5, max_value=20, value=10, step=1)
@@ -144,7 +135,7 @@ def main():
     st.pyplot(fig3)
 
     # Tabela detalhada
-    st.subheader("📋 Amostra de Dados Filtrados")
+    st.subheader("📋 Amostra de Dados")
     st.dataframe(df.head(50))
 
     # Informações do dataset
