@@ -6,8 +6,6 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from pathlib import Path
 import calendar
-from src.growth_metrics import render_growth_tab
-
 from datetime import datetime
 
 # Configuração da página - MODO ULTRA WIDE
@@ -170,14 +168,12 @@ def main():
         st.markdown(f"### 📊 Amostra: {len(df_filtered):,} registros")
         st.markdown(f"📅 {start_date.strftime('%d/%m/%Y')} - {end_date.strftime('%d/%m/%Y')}")
 
-    # MAIN CONTENT - Tabs organizadas
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    # MAIN CONTENT - Tabs organizadas (APENAS 4 TABS)
+    tab1, tab2, tab3, tab4 = st.tabs([
         "📈 **Visão Geral**",
         "💰 **Análise Financeira**",
         "📦 **Performance de Produtos**",
-        "🚀 **Growth Analytics**",  # NOVA TAB
         "🎯 **Insights Estratégicos**"
-
     ])
 
     with tab1:
@@ -399,90 +395,87 @@ def main():
             height=400
         )
 
-        with tab4:  # 🚀 Growth Analytics
-            render_growth_tab(st, df_filtered)  # <-- Chama a função do growth_metrics
+    with tab4:
+        st.subheader("🎯 Insights Estratégicos")
 
-        with tab5:  # 🎯 Insights Estratégicos (antiga tab4)
-            st.subheader("🎯 Insights Estratégicos")
+        # Cálculos para insights
+        total_revenue_filtered = df_filtered['total_revenue'].sum()
+        total_revenue_full = df['total_revenue'].sum()
 
-            # Cálculos para insights
-            total_revenue_filtered = df_filtered['total_revenue'].sum()
-            total_revenue_full = df['total_revenue'].sum()
+        # Top categorias
+        top_categories = df_filtered.groupby('product_category')['total_revenue'].sum().nlargest(3)
 
-            # Top categorias
-            top_categories = df_filtered.groupby('product_category')['total_revenue'].sum().nlargest(3)
+        # Melhor período
+        monthly_revenue = df_filtered.groupby('month')['total_revenue'].sum()
+        best_month = monthly_revenue.idxmax()
+        best_month_name = calendar.month_name[best_month]
 
-            # Melhor período
-            monthly_revenue = df_filtered.groupby('month')['total_revenue'].sum()
-            best_month = monthly_revenue.idxmax()
-            best_month_name = calendar.month_name[best_month]
+        # Análise de rentabilidade por desconto
+        discount_efficiency = df_filtered.groupby('discount_percent').agg({
+            'total_revenue': 'sum',
+            'quantity_sold': 'sum'
+        }).reset_index()
+        discount_efficiency['revenue_per_unit'] = discount_efficiency['total_revenue'] / discount_efficiency[
+            'quantity_sold']
+        best_discount = discount_efficiency.loc[discount_efficiency['revenue_per_unit'].idxmax(), 'discount_percent']
 
-            # Análise de rentabilidade por desconto
-            discount_efficiency = df_filtered.groupby('discount_percent').agg({
-                'total_revenue': 'sum',
-                'quantity_sold': 'sum'
-            }).reset_index()
-            discount_efficiency['revenue_per_unit'] = discount_efficiency['total_revenue'] / discount_efficiency[
-                'quantity_sold']
-            best_discount = discount_efficiency.loc[
-                discount_efficiency['revenue_per_unit'].idxmax(), 'discount_percent']
+        col1, col2 = st.columns(2)
 
-            col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("### 🎯 Principais Descobertas")
 
-            with col1:
-                st.markdown("### 🎯 Principais Descobertas")
+            st.markdown(f"""
+            <div class="insight-box">
+                <h4>📊 Performance Geral</h4>
+                <ul>
+                    <li><b>Market Share:</b> Este período representa <b>{(total_revenue_filtered / total_revenue_full * 100):.1f}%</b> da receita total</li>
+                    <li><b>Crescimento:</b> Ticket médio de <b>${avg_ticket:.2f}</b></li>
+                    <li><b>Sazonalidade:</b> Melhor mês é <b>{best_month_name}</b></li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
 
-                st.markdown(f"""
-                <div class="insight-box">
-                    <h4>📊 Performance Geral</h4>
-                    <ul>
-                        <li><b>Market Share:</b> Este período representa <b>{(total_revenue_filtered / total_revenue_full * 100):.1f}%</b> da receita total</li>
-                        <li><b>Crescimento:</b> Ticket médio de <b>${avg_ticket:.2f}</b></li>
-                        <li><b>Sazonalidade:</b> Melhor mês é <b>{best_month_name}</b></li>
-                    </ul>
-                </div>
-                """, unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="insight-box">
+                <h4>🏆 Top 3 Categorias</h4>
+                <ol>
+                    {''.join([f'<li><b>{cat}</b>: ${val:,.0f}</li>' for cat, val in top_categories.items()])}
+                </ol>
+                <p>Representam <b>{(top_categories.sum() / total_revenue_filtered * 100):.1f}%</b> da receita total</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-                st.markdown(f"""
-                <div class="insight-box">
-                    <h4>🏆 Top 3 Categorias</h4>
-                    <ol>
-                        {''.join([f'<li><b>{cat}</b>: ${val:,.0f}</li>' for cat, val in top_categories.items()])}
-                    </ol>
-                    <p>Representam <b>{(top_categories.sum() / total_revenue_filtered * 100):.1f}%</b> da receita total</p>
-                </div>
-                """, unsafe_allow_html=True)
+        with col2:
+            st.markdown("### 💡 Recomendações")
 
-            with col2:
-                st.markdown("### 💡 Recomendações")
+            st.markdown(f"""
+            <div class="insight-box">
+                <h4>📈 Oportunidades</h4>
+                <ul>
+                    <li><b>Desconto Ótimo:</b> {best_discount}% maximiza receita por unidade</li>
+                    <li><b>Rating:</b> {(df_filtered['rating'] >= 4).mean() * 100:.1f}% dos produtos têm rating ≥4 ⭐</li>
+                    <li><b>Mix de produtos:</b> {df_filtered['product_category'].nunique()} categorias ativas</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
 
-                st.markdown(f"""
-                <div class="insight-box">
-                    <h4>📈 Oportunidades</h4>
-                    <ul>
-                        <li><b>Desconto Ótimo:</b> {best_discount}% maximiza receita por unidade</li>
-                        <li><b>Rating:</b> {(df_filtered['rating'] >= 4).mean() * 100:.1f}% dos produtos têm rating ≥4 ⭐</li>
-                        <li><b>Mix de produtos:</b> {df_filtered['product_category'].nunique()} categorias ativas</li>
-                    </ul>
-                </div>
-                """, unsafe_allow_html=True)
+            # Gráfico de tendência com previsão simples
+            st.markdown("### 🔮 Tendência e Projeção")
+            monthly_trend = df_filtered.groupby(df_filtered['order_date'].dt.to_period('M'))[
+                'total_revenue'].sum().reset_index()
+            monthly_trend['order_date'] = monthly_trend['order_date'].astype(str)
 
-                # Gráfico de tendência com previsão simples
-                st.markdown("### 🔮 Tendência e Projeção")
-                monthly_trend = df_filtered.groupby(df_filtered['order_date'].dt.to_period('M'))[
-                    'total_revenue'].sum().reset_index()
-                monthly_trend['order_date'] = monthly_trend['order_date'].astype(str)
+            # Adicionar linha de tendência
+            fig = px.scatter(
+                monthly_trend,
+                x='order_date',
+                y='total_revenue',
+                trendline="lowess",
+                title="Tendência de Receita"
+            )
+            fig.update_traces(marker=dict(size=10, color='#FF9900'))
+            st.plotly_chart(fig, use_container_width=True)
 
-                # Adicionar linha de tendência
-                fig = px.scatter(
-                    monthly_trend,
-                    x='order_date',
-                    y='total_revenue',
-                    trendline="lowess",
-                    title="Tendência de Receita"
-                )
-                fig.update_traces(marker=dict(size=10, color='#FF9900'))
-                st.plotly_chart(fig, use_container_width=True)
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()
