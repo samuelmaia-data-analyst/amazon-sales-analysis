@@ -168,7 +168,7 @@ def main():
         st.markdown(f"### 📊 Amostra: {len(df_filtered):,} registros")
         st.markdown(f"📅 {start_date.strftime('%d/%m/%Y')} - {end_date.strftime('%d/%m/%Y')}")
 
-    # MAIN CONTENT - Tabs organizadas (APENAS 4 TABS)
+    # MAIN CONTENT - Tabs organizadas
     tab1, tab2, tab3, tab4 = st.tabs([
         "📈 **Visão Geral**",
         "💰 **Análise Financeira**",
@@ -459,21 +459,37 @@ def main():
             </div>
             """, unsafe_allow_html=True)
 
-            # Gráfico de tendência com previsão simples
-            st.markdown("### 🔮 Tendência e Projeção")
-            monthly_trend = df_filtered.groupby(df_filtered['order_date'].dt.to_period('M'))[
-                'total_revenue'].sum().reset_index()
-            monthly_trend['order_date'] = monthly_trend['order_date'].astype(str)
+            # Gráfico de tendência - VERSÃO CORRIGIDA
+            st.markdown("### 🔮 Tendência Mensal")
 
-            # Adicionar linha de tendência
-            fig = px.scatter(
+            # Agrupar por mês de forma segura
+            monthly_trend = df_filtered.groupby(
+                pd.Grouper(key='order_date', freq='ME')
+            )['total_revenue'].sum().reset_index()
+
+            # Garantir que a data está no formato correto
+            monthly_trend['order_date'] = pd.to_datetime(monthly_trend['order_date'])
+
+            # Criar gráfico de linhas
+            fig = px.line(
                 monthly_trend,
                 x='order_date',
                 y='total_revenue',
-                trendline="lowess",
-                title="Tendência de Receita"
+                title="📈 Tendência de Receita Mensal",
+                markers=True
             )
-            fig.update_traces(marker=dict(size=10, color='#FF9900'))
+
+            # Personalizar
+            fig.update_traces(
+                line=dict(color='#FF9900', width=3),
+                marker=dict(size=8, color='#FF9900')
+            )
+            fig.update_layout(
+                xaxis_title="Mês",
+                yaxis_title="Receita Total ($)",
+                hovermode='x unified'
+            )
+
             st.plotly_chart(fig, use_container_width=True)
 
 
