@@ -1,7 +1,7 @@
 # 🛒 Amazon Sales Analysis
 ### Dashboard Estratégico de Performance de Vendas
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://amazon-sales-analysis-samuelmaiapro.streamlit.app)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://amazon-sales-analysis-samuelmaia-data-analyst.streamlit.app)
 ![Python](https://img.shields.io/badge/Python-3.13-blue)
 ![Pandas](https://img.shields.io/badge/Pandas-2.0+-brightgreen)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red)
@@ -14,7 +14,7 @@ Este projeto consiste em um **dashboard interativo e executivo** para análise a
 
 O projeto foi construído com foco em **reprodutibilidade, boas práticas de engenharia de dados e design de informação**, resultando em uma solução profissional e pronta para produção.
 
-**🔗 Acesse o dashboard online:** [amazon-sales-analysis-samuelmaiapro.streamlit.app](https://amazon-sales-analysis-samuelmaiapro.streamlit.app)
+**🔗 Acesse o dashboard online:** [amazon-sales-analysis-samuelmaia-data-analyst.streamlit.app](https://amazon-sales-analysis-samuelmaia-data-analyst.streamlit.app)
 
 ## 🎯 Principais Funcionalidades e Insights
 
@@ -77,7 +77,7 @@ Siga estes passos para reproduzir o ambiente e executar o projeto em sua máquin
 
 1.  **Clone o repositório**
     ```bash
-    git clone https://github.com/samuelmaiapro/amazon-sales-analysis.git
+    git clone https://github.com/samuelmaia-data-analyst/amazon-sales-analysis.git
     cd amazon-sales-analysis
     ```
 
@@ -160,8 +160,8 @@ Este projeto foi desenvolvido por **Samuel Maia**, Analista de Dados com mais de
 
 | Canal | Link |
 | :--- | :--- |
-| **GitHub** | [github.com/samuelmaiapro](https://github.com/samuelmaiapro) |
-| **LinkedIn** | [linkedin.com/in/samuelmaiapro](https://linkedin.com/in/samuelmaiapro) |
+| **GitHub** | [github.com/samuelmaia-data-analyst](https://github.com/samuelmaia-data-analyst) |
+| **LinkedIn** | [linkedin.com/in/samuelmaia-data-analyst](https://linkedin.com/in/samuelmaia-data-analyst) |
 | **Email** | smaia2@gmail.com |
 
 Para conhecer mais sobre minha trajetória e outros projetos, visite meu perfil no GitHub ou entre em contato pelo LinkedIn.
