@@ -129,44 +129,31 @@ def main():
         # Data atual para referência
         today = datetime.now().date()
 
-        # CORREÇÃO: Lógica corrigida para cada tipo de período
+        # CORREÇÃO: Lógica simplificada para cada tipo de período
         if date_range_type == "Último Mês":
-            # Mês anterior completo baseado na última data disponível nos dados
+            # Último mês com dados disponíveis
             last_date = max_date
-            # Primeiro dia do último mês
             start_date = last_date.replace(day=1)
-            # Último dia do último mês
             end_date = last_date
-            # Ajustar se for mês atual sem dados completos
-            if last_date.month == today.month and last_date.year == today.year:
-                # Se a última data é do mês atual, pegar o mês anterior
-                start_date = (start_date - relativedelta(months=1)).replace(day=1)
-                end_date = start_date.replace(day=1) + relativedelta(months=1) - timedelta(days=1)
 
         elif date_range_type == "Último Trimestre":
-            # Trimestre anterior completo
+            # Último trimestre completo baseado na última data
             last_date = max_date
-            # Encontrar o trimestre da última data
-            last_quarter = (last_date.month - 1) // 3 + 1
-            # Primeiro mês do último trimestre
-            first_month_last_quarter = ((last_quarter - 1) * 3) + 1
 
-            # Se a última data está no trimestre atual, pegar o trimestre anterior
-            current_quarter = (today.month - 1) // 3 + 1
-            if last_quarter == current_quarter and last_date.year == today.year:
+            # Encontrar o primeiro dia do trimestre da última data
+            quarter_start_month = ((last_date.month - 1) // 3) * 3 + 1
+            quarter_start = datetime(last_date.year, quarter_start_month, 1).date()
+
+            # Se a última data não é o último dia do trimestre, pegar o trimestre anterior
+            quarter_end = (quarter_start + relativedelta(months=3) - timedelta(days=1))
+
+            if last_date < quarter_end:
                 # Pegar trimestre anterior
-                if last_quarter == 1:
-                    start_date = datetime(last_date.year - 1, 10, 1).date()
-                    end_date = datetime(last_date.year - 1, 12, 31).date()
-                else:
-                    prev_quarter = last_quarter - 1
-                    first_month_prev_quarter = ((prev_quarter - 1) * 3) + 1
-                    start_date = datetime(last_date.year, first_month_prev_quarter, 1).date()
-                    end_date = (datetime(last_date.year, first_month_prev_quarter + 3, 1).date() - timedelta(days=1))
-            else:
-                # Usar o último trimestre completo disponível
-                start_date = datetime(last_date.year, first_month_last_quarter, 1).date()
-                end_date = (datetime(last_date.year, first_month_last_quarter + 3, 1).date() - timedelta(days=1))
+                quarter_start = quarter_start - relativedelta(months=3)
+                quarter_end = quarter_start + relativedelta(months=3) - timedelta(days=1)
+
+            start_date = quarter_start
+            end_date = quarter_end
 
         elif date_range_type == "Último Ano":
             # Último ano completo baseado na última data
