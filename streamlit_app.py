@@ -129,35 +129,50 @@ def main():
         # Data atual para referência
         today = datetime.now().date()
 
-        # CORREÇÃO: Lógica simplificada para cada tipo de período
+        # CORREÇÃO: Lógica corrigida para cada tipo de período
         if date_range_type == "Último Mês":
-            # Primeiro dia do mês atual
-            first_day_current_month = today.replace(day=1)
-            # Último dia do mês anterior
-            end_date = first_day_current_month - timedelta(days=1)
-            # Primeiro dia do mês anterior
-            start_date = end_date.replace(day=1)
+            # Mês anterior completo baseado na última data disponível nos dados
+            last_date = max_date
+            # Primeiro dia do último mês
+            start_date = last_date.replace(day=1)
+            # Último dia do último mês
+            end_date = last_date
+            # Ajustar se for mês atual sem dados completos
+            if last_date.month == today.month and last_date.year == today.year:
+                # Se a última data é do mês atual, pegar o mês anterior
+                start_date = (start_date - relativedelta(months=1)).replace(day=1)
+                end_date = start_date.replace(day=1) + relativedelta(months=1) - timedelta(days=1)
 
         elif date_range_type == "Último Trimestre":
-            # Calcular o primeiro dia do trimestre atual
+            # Trimestre anterior completo
+            last_date = max_date
+            # Encontrar o trimestre da última data
+            last_quarter = (last_date.month - 1) // 3 + 1
+            # Primeiro mês do último trimestre
+            first_month_last_quarter = ((last_quarter - 1) * 3) + 1
+
+            # Se a última data está no trimestre atual, pegar o trimestre anterior
             current_quarter = (today.month - 1) // 3 + 1
-            first_month_current_quarter = ((current_quarter - 1) * 3) + 1
-
-            # Criar data do primeiro dia do trimestre atual
-            first_day_current_quarter = datetime(today.year, first_month_current_quarter, 1).date()
-
-            # Último dia do trimestre anterior = dia anterior ao primeiro dia do trimestre atual
-            end_date = first_day_current_quarter - timedelta(days=1)
-
-            # Primeiro dia do trimestre anterior = primeiro dia do trimestre do end_date
-            quarter_of_end = (end_date.month - 1) // 3 + 1
-            first_month_prev_quarter = ((quarter_of_end - 1) * 3) + 1
-            start_date = datetime(end_date.year, first_month_prev_quarter, 1).date()
+            if last_quarter == current_quarter and last_date.year == today.year:
+                # Pegar trimestre anterior
+                if last_quarter == 1:
+                    start_date = datetime(last_date.year - 1, 10, 1).date()
+                    end_date = datetime(last_date.year - 1, 12, 31).date()
+                else:
+                    prev_quarter = last_quarter - 1
+                    first_month_prev_quarter = ((prev_quarter - 1) * 3) + 1
+                    start_date = datetime(last_date.year, first_month_prev_quarter, 1).date()
+                    end_date = (datetime(last_date.year, first_month_prev_quarter + 3, 1).date() - timedelta(days=1))
+            else:
+                # Usar o último trimestre completo disponível
+                start_date = datetime(last_date.year, first_month_last_quarter, 1).date()
+                end_date = (datetime(last_date.year, first_month_last_quarter + 3, 1).date() - timedelta(days=1))
 
         elif date_range_type == "Último Ano":
-            # Ano anterior completo
-            start_date = datetime(today.year - 1, 1, 1).date()
-            end_date = datetime(today.year - 1, 12, 31).date()
+            # Último ano completo baseado na última data
+            last_date = max_date
+            start_date = datetime(last_date.year - 1, 1, 1).date()
+            end_date = datetime(last_date.year - 1, 12, 31).date()
 
         elif date_range_type == "Customizado":
             date_range = st.date_input(
@@ -173,6 +188,10 @@ def main():
         # Garantir que as datas estão dentro do range disponível
         start_date = max(start_date, min_date)
         end_date = min(end_date, max_date)
+
+        # Garantir que start_date é menor ou igual a end_date
+        if start_date > end_date:
+            start_date, end_date = min_date, max_date
 
         # Converter para datetime para filtrar
         start_datetime = pd.to_datetime(start_date)
