@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS customizado para dark mode elegante com sidebar mais clara
+# CSS customizado
 st.markdown("""
 <style>
     .main-header {
@@ -33,13 +33,6 @@ st.markdown("""
         color: #666;
         margin-top: -10px;
         margin-bottom: 30px;
-    }
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        color: white;
     }
     .insight-box {
         background: rgba(255,255,255,0.1);
@@ -67,78 +60,57 @@ st.markdown("""
         color: white !important;
     }
 
-    /* Ajustes para melhor visibilidade da logo */
+    /* Logo container */
     .logo-container {
         background-color: white;
-        padding: 25px;
-        border-radius: 15px;
-        margin-bottom: 25px;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
         text-align: center;
         border: 2px solid #FF9900;
-        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
     }
 
-    /* Fundo mais escuro para sidebar para destacar a logo */
+    /* Sidebar styling */
     .stSidebar {
         background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
     }
 
-    /* Ajuste para os títulos na sidebar */
     .stSidebar h1, .stSidebar h2, .stSidebar h3 {
         color: #FF9900 !important;
     }
 
-    /* Melhorar visibilidade dos elementos da sidebar */
-    .stSidebar .stSelectbox label, .stSidebar .stRadio label {
-        color: #cccccc !important;
-        font-weight: 500;
-    }
-
-    .stSidebar .stSelectbox div[data-baseweb="select"] {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-color: #FF9900;
-    }
-
-    /* Footer da sidebar */
     .sidebar-footer {
         background: rgba(255, 153, 0, 0.2);
         padding: 15px;
         border-radius: 10px;
-        margin-top: 30px;
+        margin-top: 20px;
         border: 1px solid #FF9900;
     }
 </style>
 """, unsafe_allow_html=True)
 
 
-# Carregar dados
 @st.cache_data(ttl=3600)
 def load_data():
-    """Carrega e prepara os dados com feature engineering."""
+    """Carrega e prepara os dados."""
     BASE_DIR = Path(__file__).parent
     DATA_PATH = BASE_DIR / "data" / "processed" / "amazon_sales_clean.csv"
 
     df = pd.read_csv(DATA_PATH, parse_dates=["order_date"])
 
-    # Feature Engineering Avançado
+    # Feature Engineering
     df['year'] = df['order_date'].dt.year
     df['month'] = df['order_date'].dt.month
     df['month_name'] = df['order_date'].dt.month_name()
     df['quarter'] = df['order_date'].dt.quarter
     df['day_of_week'] = df['order_date'].dt.day_name()
     df['is_weekend'] = df['day_of_week'].isin(['Saturday', 'Sunday'])
-    df['week'] = df['order_date'].dt.isocalendar().week
-
-    # Métricas derivadas
     df['revenue_per_unit'] = df['total_revenue'] / df['quantity_sold']
-    df['discount_impact'] = (df['price'] * df['quantity_sold']) - df['total_revenue']
-    df['profit_margin'] = (df['total_revenue'] - df['discount_impact']) / df['total_revenue'] * 100
 
     return df
 
 
 def main():
-    # Header estiloso
     st.markdown('<p class="main-header">Amazon Sales Analytics</p>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">Dashboard Executivo de Performance de Vendas</p>', unsafe_allow_html=True)
 
@@ -148,9 +120,8 @@ def main():
         st.error(f"🚨 Erro ao carregar dados: {e}")
         st.stop()
 
-    # SIDEBAR - Filtros Avançados com logo melhorada
+    # SIDEBAR
     with st.sidebar:
-        # Container especial para a logo com fundo branco
         st.markdown("""
         <div class="logo-container">
             <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" 
@@ -161,7 +132,6 @@ def main():
 
         st.markdown("## 🎯 Filtros")
 
-        # Date range com quick selects - VERSÃO CORRIGIDA
         date_range_type = st.radio(
             "Período",
             ["Todo Período", "Último Mês", "Último Trimestre", "Último Ano", "Customizado"],
@@ -171,14 +141,11 @@ def main():
         min_date = df['order_date'].min().date()
         max_date = df['order_date'].max().date()
 
-        # Inicializar start_date e end_date com valores padrão
         start_date = min_date
         end_date = max_date
-
-        # Data atual para referência
         today = datetime.now().date()
 
-        # CORREÇÃO: Lógica corrigida para cada tipo de período
+        # CÁLCULO CORRETO DOS PERÍODOS
         if date_range_type == "Último Mês":
             # Primeiro dia do mês atual
             first_day_current_month = today.replace(day=1)
@@ -195,17 +162,17 @@ def main():
 
             # Último dia do trimestre anterior
             end_date = first_day_current_quarter - timedelta(days=1)
-            # Primeiro dia do trimestre anterior (3 meses antes)
-            start_date = end_date.replace(day=1) - relativedelta(months=2)
-            start_date = start_date.replace(day=1)
+            # Primeiro dia do trimestre anterior
+            start_date = date(
+                end_date.year if end_date.month > 3 else end_date.year - 1,
+                ((end_date.month - 1) // 3) * 3 + 1,
+                1
+            )
 
         elif date_range_type == "Último Ano":
-            # Primeiro dia do ano atual
-            first_day_current_year = date(today.year, 1, 1)
-            # Último dia do ano anterior
-            end_date = first_day_current_year - timedelta(days=1)
-            # Primeiro dia do ano anterior
+            # Ano anterior completo
             start_date = date(today.year - 1, 1, 1)
+            end_date = date(today.year - 1, 12, 31)
 
         elif date_range_type == "Customizado":
             date_range = st.date_input(
@@ -216,40 +183,31 @@ def main():
             )
             if len(date_range) == 2:
                 start_date, end_date = date_range
-        # else "Todo Período" - já temos start_date e end_date com min_date e max_date
 
         # Garantir que as datas estão dentro do range disponível
         start_date = max(start_date, min_date)
         end_date = min(end_date, max_date)
 
-        # Garantir que start_date é menor que end_date
-        if start_date > end_date:
-            start_date, end_date = min_date, max_date
-            st.warning("⚠️ Período selecionado inválido. Mostrando todo o período.")
-
-        # Converter para datetime para filtrar
+        # Converter para datetime
         start_datetime = pd.to_datetime(start_date)
-        end_datetime = pd.to_datetime(end_date) + pd.DateOffset(days=1) - pd.DateOffset(
-            seconds=1)  # Incluir todo o dia final
+        end_datetime = pd.to_datetime(end_date) + pd.DateOffset(days=1) - pd.DateOffset(seconds=1)
 
-        df_filtered = df[(df['order_date'] >= start_datetime) &
-                         (df['order_date'] <= end_datetime)]
+        # Filtrar dados
+        df_filtered = df[(df['order_date'] >= start_datetime) & (df['order_date'] <= end_datetime)]
 
-        # Filtros multiselect - usar valores únicos do df_filtered para mostrar apenas opções disponíveis
+        # Filtros adicionais
         if not df_filtered.empty:
             regions = ['Todas'] + sorted(df_filtered['customer_region'].unique().tolist())
             categories = ['Todas'] + sorted(df_filtered['product_category'].unique().tolist())
             payment_methods = ['Todos'] + sorted(df_filtered['payment_method'].unique().tolist())
         else:
-            regions = ['Todas']
-            categories = ['Todas']
-            payment_methods = ['Todos']
+            regions = categories = payment_methods = ['Todas']
 
         selected_region = st.selectbox("📍 Região", regions)
         selected_category = st.selectbox("📦 Categoria", categories)
         selected_payment = st.selectbox("💳 Método de Pagamento", payment_methods)
 
-        # Aplicar filtros apenas se houver dados
+        # Aplicar filtros adicionais
         if not df_filtered.empty:
             if selected_region != 'Todas':
                 df_filtered = df_filtered[df_filtered['customer_region'] == selected_region]
@@ -258,7 +216,7 @@ def main():
             if selected_payment != 'Todos':
                 df_filtered = df_filtered[df_filtered['payment_method'] == selected_payment]
 
-        # KPIs rápidos do filtro com estilo melhorado
+        # Resumo do filtro
         st.markdown("---")
         st.markdown("""
         <div class="sidebar-footer">
@@ -268,7 +226,7 @@ def main():
         st.markdown(f"**Período:** {start_date.strftime('%d/%m/%Y')} - {end_date.strftime('%d/%m/%Y')}")
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # MAIN CONTENT - Tabs organizadas
+    # TABS
     tab1, tab2, tab3, tab4 = st.tabs([
         "📈 **Visão Geral**",
         "💰 **Análise Financeira**",
@@ -276,26 +234,13 @@ def main():
         "🎯 **Insights Estratégicos**"
     ])
 
-    # Verificar se há dados para exibir
     if df_filtered.empty:
         for tab in [tab1, tab2, tab3, tab4]:
             with tab:
-                st.warning("""
-                ⚠️ **Nenhum dado encontrado para o período e filtros selecionados.**
-
-                Possíveis causas:
-                - O período selecionado pode não conter dados
-                - Os filtros de região, categoria ou pagamento podem ser muito restritivos
-                - Os dados podem não existir para a combinação de filtros escolhida
-
-                **Sugestões:**
-                - Tente um período diferente
-                - Selecione "Todas" nas opções de filtro
-                - Verifique se há dados disponíveis no período selecionado
-                """)
+                st.warning("⚠️ Nenhum dado encontrado para os filtros selecionados.")
     else:
         with tab1:
-            # Métricas principais com design melhorado
+            # Métricas principais
             col1, col2, col3, col4 = st.columns(4)
 
             with col1:
@@ -303,55 +248,27 @@ def main():
                 st.metric(
                     "💰 Receita Total",
                     f"${total_revenue:,.0f}",
-                    delta=f"{((total_revenue / df['total_revenue'].sum()) * 100):.1f}% do total",
-                    delta_color="normal"
+                    delta=f"{((total_revenue / df['total_revenue'].sum()) * 100):.1f}% do total"
                 )
 
             with col2:
                 total_orders = df_filtered['order_id'].nunique()
-                # Calcular período anterior apenas se houver dados suficientes
-                if len(df_filtered) > 0 and date_range_type != "Todo Período":
-                    period_days = (end_datetime - start_datetime).days
-                    prev_start = start_datetime - relativedelta(days=period_days)
-                    prev_end = start_datetime - timedelta(seconds=1)
-
-                    prev_period = df[(df['order_date'] >= prev_start) &
-                                     (df['order_date'] <= prev_end)]['order_id'].nunique()
-                    growth = ((total_orders - prev_period) / prev_period * 100) if prev_period > 0 else 0
-                else:
-                    growth = 0
-
-                st.metric(
-                    "📦 Total Pedidos",
-                    f"{total_orders:,}",
-                    delta=f"{growth:.1f}% vs período anterior",
-                    delta_color="inverse" if growth < 0 else "normal"
-                )
+                st.metric("📦 Total Pedidos", f"{total_orders:,}")
 
             with col3:
                 avg_ticket = total_revenue / total_orders if total_orders > 0 else 0
-                st.metric(
-                    "🎫 Ticket Médio",
-                    f"${avg_ticket:,.2f}",
-                    delta=f"${df_filtered['revenue_per_unit'].mean():,.2f} por unidade"
-                )
+                st.metric("🎫 Ticket Médio", f"${avg_ticket:,.2f}")
 
             with col4:
                 avg_rating = df_filtered['rating'].mean()
-                high_rating_pct = (df_filtered['rating'] >= 4).mean() * 100
-                st.metric(
-                    "⭐ Rating Médio",
-                    f"{avg_rating:.2f}",
-                    delta=f"{high_rating_pct:.1f}% ⭐⭐⭐⭐"
-                )
+                st.metric("⭐ Rating Médio", f"{avg_rating:.2f}")
 
-            # Gráficos em grid
+            # Gráficos
             col1, col2 = st.columns(2)
 
             with col1:
-                # Receita por Região (Pizza melhorada)
                 region_revenue = df_filtered.groupby('customer_region')['total_revenue'].sum().reset_index()
-                if len(region_revenue) > 0:
+                if not region_revenue.empty:
                     fig = px.pie(
                         region_revenue,
                         values='total_revenue',
@@ -361,13 +278,11 @@ def main():
                         color_discrete_sequence=px.colors.sequential.Viridis
                     )
                     fig.update_traces(textposition='inside', textinfo='percent+label')
-                    fig.update_layout(showlegend=False)
                     st.plotly_chart(fig, use_container_width=True)
 
             with col2:
-                # Métodos de Pagamento
                 payment_revenue = df_filtered.groupby('payment_method')['total_revenue'].sum().reset_index()
-                if len(payment_revenue) > 0:
+                if not payment_revenue.empty:
                     fig = px.bar(
                         payment_revenue,
                         x='payment_method',
@@ -376,21 +291,18 @@ def main():
                         color='total_revenue',
                         color_continuous_scale='Viridis'
                     )
-                    fig.update_layout(xaxis_title="", yaxis_title="Receita ($)")
                     st.plotly_chart(fig, use_container_width=True)
 
-            # Timeline interativa
+            # Timeline
             daily_revenue = df_filtered.groupby('order_date')['total_revenue'].sum().reset_index()
-            if len(daily_revenue) > 0:
+            if not daily_revenue.empty:
                 fig = px.line(
                     daily_revenue,
                     x='order_date',
                     y='total_revenue',
-                    title='📅 Evolução Diária da Receita',
-                    labels={'total_revenue': 'Receita ($)', 'order_date': 'Data'}
+                    title='📅 Evolução Diária da Receita'
                 )
                 fig.update_traces(line_color='#FF9900', line_width=3)
-                fig.update_layout(hovermode='x unified')
                 st.plotly_chart(fig, use_container_width=True)
 
         with tab2:
@@ -399,7 +311,7 @@ def main():
             col1, col2 = st.columns(2)
 
             with col1:
-                # Mapa de calor de receita (dia da semana x mês)
+                # Mapa de calor
                 try:
                     heatmap_data = df_filtered.pivot_table(
                         values='total_revenue',
@@ -409,249 +321,75 @@ def main():
                         fill_value=0
                     )
 
-                    # Ordenar dias da semana e meses
-                    day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-                    month_order = list(calendar.month_name)[1:]
-
-                    # Verificar se há dados antes de reindexar
                     if not heatmap_data.empty:
-                        # Reindexar apenas com as colunas que existem
-                        available_months = [m for m in month_order if m in heatmap_data.columns]
-                        available_days = [d for d in day_order if d in heatmap_data.index]
-
-                        if available_months and available_days:
-                            heatmap_data = heatmap_data.reindex(available_days)[available_months]
-
-                            fig = px.imshow(
-                                heatmap_data,
-                                title='🔥 Mapa de Calor: Receita por Dia da Semana vs Mês',
-                                color_continuous_scale='Viridis',
-                                aspect="auto"
-                            )
-                            fig.update_layout(height=500)
-                            st.plotly_chart(fig, use_container_width=True)
+                        fig = px.imshow(
+                            heatmap_data,
+                            title='🔥 Receita por Dia da Semana vs Mês',
+                            color_continuous_scale='Viridis',
+                            aspect="auto"
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
                 except:
-                    st.info("Não foi possível gerar o mapa de calor para o período selecionado")
+                    st.info("Não foi possível gerar o mapa de calor")
 
             with col2:
-                # Análise de desconto x receita
-                if 'discount_percent' in df_filtered.columns:
-                    discount_analysis = df_filtered.groupby('discount_percent')['total_revenue'].agg(
-                        ['sum', 'count']).reset_index()
-                    discount_analysis['avg_revenue'] = discount_analysis['sum'] / discount_analysis['count']
-
-                    if len(discount_analysis) > 0:
-                        fig = make_subplots(specs=[[{"secondary_y": True}]])
-                        fig.add_trace(
-                            go.Bar(x=discount_analysis['discount_percent'], y=discount_analysis['sum'],
-                                   name="Receita Total"),
-                            secondary_y=False
-                        )
-                        fig.add_trace(
-                            go.Scatter(x=discount_analysis['discount_percent'], y=discount_analysis['avg_revenue'],
-                                       name="Ticket Médio", line=dict(color='red', width=3)),
-                            secondary_y=True
-                        )
-                        fig.update_layout(title="📊 Impacto do Desconto nas Vendas")
-                        fig.update_xaxes(title_text="Percentual de Desconto")
-                        fig.update_yaxes(title_text="Receita Total ($)", secondary_y=False)
-                        fig.update_yaxes(title_text="Ticket Médio ($)", secondary_y=True)
-                        st.plotly_chart(fig, use_container_width=True)
-
-            # Top produtos por receita
-            st.subheader("🏆 Top 10 Produtos por Receita")
-            if 'product_id' in df_filtered.columns:
+                # Top produtos
                 top_products = df_filtered.groupby('product_id').agg({
                     'total_revenue': 'sum',
                     'quantity_sold': 'sum',
                     'rating': 'mean'
-                }).sort_values('total_revenue', ascending=False).head(10).reset_index()
+                }).sort_values('total_revenue', ascending=False).head(10)
 
-                if len(top_products) > 0:
-                    col1, col2 = st.columns([2, 1])
-                    with col1:
-                        fig = px.bar(
-                            top_products,
-                            x='product_id',
-                            y='total_revenue',
-                            color='rating',
-                            color_continuous_scale='RdYlGn',
-                            title="Top 10 Produtos por Receita"
-                        )
-                        st.plotly_chart(fig, use_container_width=True)
-
-                    with col2:
-                        st.dataframe(
-                            top_products.style.format({
-                                'total_revenue': '${:,.0f}',
-                                'quantity_sold': '{:,.0f}',
-                                'rating': '{:.1f}'
-                            }),
-                            use_container_width=True,
-                            height=400
-                        )
+                if not top_products.empty:
+                    st.dataframe(
+                        top_products.style.format({
+                            'total_revenue': '${:,.0f}',
+                            'quantity_sold': '{:,.0f}',
+                            'rating': '{:.1f}'
+                        }),
+                        use_container_width=True
+                    )
 
         with tab3:
-            st.subheader("📦 Análise de Performance por Categoria")
+            st.subheader("📦 Performance por Categoria")
 
-            # Métricas por categoria
             category_metrics = df_filtered.groupby('product_category').agg({
                 'total_revenue': 'sum',
                 'quantity_sold': 'sum',
                 'order_id': 'nunique',
-                'rating': 'mean',
-                'price': 'mean'
+                'rating': 'mean'
             }).reset_index()
 
-            if len(category_metrics) > 0:
-                category_metrics['avg_ticket'] = category_metrics['total_revenue'] / category_metrics['order_id']
-                category_metrics['revenue_per_unit'] = category_metrics['total_revenue'] / category_metrics[
-                    'quantity_sold']
-
-                # Bubble chart interativo
-                fig = px.scatter(
-                    category_metrics,
-                    x='quantity_sold',
-                    y='total_revenue',
-                    size='avg_ticket',
-                    color='rating',
-                    hover_name='product_category',
-                    text='product_category',
-                    title='📊 Matriz de Performance por Categoria',
-                    labels={
-                        'quantity_sold': 'Quantidade Vendida',
-                        'total_revenue': 'Receita Total ($)',
-                        'rating': 'Rating Médio'
-                    },
-                    color_continuous_scale='RdYlGn'
-                )
-                fig.update_traces(textposition='top center')
-                st.plotly_chart(fig, use_container_width=True)
-
-                # Tabela detalhada
-                st.subheader("📋 Métricas Detalhadas por Categoria")
+            if not category_metrics.empty:
                 st.dataframe(
                     category_metrics.style.format({
                         'total_revenue': '${:,.0f}',
                         'quantity_sold': '{:,.0f}',
                         'order_id': '{:,.0f}',
-                        'rating': '{:.2f}',
-                        'price': '${:.2f}',
-                        'avg_ticket': '${:.2f}',
-                        'revenue_per_unit': '${:.2f}'
+                        'rating': '{:.2f}'
                     }),
-                    use_container_width=True,
-                    height=400
+                    use_container_width=True
                 )
 
         with tab4:
             st.subheader("🎯 Insights Estratégicos")
 
-            # Cálculos para insights
-            total_revenue_filtered = df_filtered['total_revenue'].sum()
-            total_revenue_full = df['total_revenue'].sum()
-
-            # Top categorias
-            top_categories = df_filtered.groupby('product_category')['total_revenue'].sum().nlargest(3)
-
-            # Melhor período
-            monthly_revenue = df_filtered.groupby('month')['total_revenue'].sum()
-            if not monthly_revenue.empty:
-                best_month = monthly_revenue.idxmax()
-                best_month_name = calendar.month_name[best_month]
-            else:
-                best_month_name = "N/A"
-
-            # Análise de rentabilidade por desconto
-            if 'discount_percent' in df_filtered.columns:
-                discount_efficiency = df_filtered.groupby('discount_percent').agg({
-                    'total_revenue': 'sum',
-                    'quantity_sold': 'sum'
-                }).reset_index()
-                discount_efficiency['revenue_per_unit'] = discount_efficiency['total_revenue'] / discount_efficiency[
-                    'quantity_sold']
-                if not discount_efficiency.empty:
-                    best_discount = discount_efficiency.loc[
-                        discount_efficiency['revenue_per_unit'].idxmax(), 'discount_percent']
-                else:
-                    best_discount = 0
-            else:
-                best_discount = 0
-
             col1, col2 = st.columns(2)
 
             with col1:
-                st.markdown("### 🎯 Principais Descobertas")
-
+                st.markdown("### 📊 Performance Geral")
                 st.markdown(f"""
-                <div class="insight-box">
-                    <h4>📊 Performance Geral</h4>
-                    <ul>
-                        <li><b>Market Share:</b> Este período representa <b>{(total_revenue_filtered / total_revenue_full * 100):.1f}%</b> da receita total</li>
-                        <li><b>Crescimento:</b> Ticket médio de <b>${avg_ticket:.2f}</b></li>
-                        <li><b>Sazonalidade:</b> Melhor mês é <b>{best_month_name}</b></li>
-                    </ul>
-                </div>
-                """, unsafe_allow_html=True)
-
-                if not top_categories.empty:
-                    st.markdown(f"""
-                    <div class="insight-box">
-                        <h4>🏆 Top 3 Categorias</h4>
-                        <ol>
-                            {''.join([f'<li><b>{cat}</b>: ${val:,.0f}</li>' for cat, val in top_categories.items()])}
-                        </ol>
-                        <p>Representam <b>{(top_categories.sum() / total_revenue_filtered * 100):.1f}%</b> da receita total</p>
-                    </div>
-                    """, unsafe_allow_html=True)
+                - **Receita total:** ${total_revenue:,.0f}
+                - **Total pedidos:** {total_orders:,}
+                - **Ticket médio:** ${avg_ticket:.2f}
+                - **Rating médio:** {avg_rating:.2f}
+                """)
 
             with col2:
-                st.markdown("### 💡 Recomendações")
-
-                st.markdown(f"""
-                <div class="insight-box">
-                    <h4>📈 Oportunidades</h4>
-                    <ul>
-                        <li><b>Desconto Ótimo:</b> {best_discount}% maximiza receita por unidade</li>
-                        <li><b>Rating:</b> {(df_filtered['rating'] >= 4).mean() * 100:.1f}% dos produtos têm rating ≥4 ⭐</li>
-                        <li><b>Mix de produtos:</b> {df_filtered['product_category'].nunique()} categorias ativas</li>
-                    </ul>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # Gráfico de tendência
-                st.markdown("### 🔮 Tendência Mensal")
-
-                # Agrupar por mês de forma segura
-                monthly_trend = df_filtered.groupby(
-                    pd.Grouper(key='order_date', freq='ME')
-                )['total_revenue'].sum().reset_index()
-
-                if len(monthly_trend) > 0:
-                    # Garantir que a data está no formato correto
-                    monthly_trend['order_date'] = pd.to_datetime(monthly_trend['order_date'])
-
-                    # Criar gráfico de linhas
-                    fig = px.line(
-                        monthly_trend,
-                        x='order_date',
-                        y='total_revenue',
-                        title="📈 Tendência de Receita Mensal",
-                        markers=True
-                    )
-
-                    # Personalizar
-                    fig.update_traces(
-                        line=dict(color='#FF9900', width=3),
-                        marker=dict(size=8, color='#FF9900')
-                    )
-                    fig.update_layout(
-                        xaxis_title="Mês",
-                        yaxis_title="Receita Total ($)",
-                        hovermode='x unified'
-                    )
-
-                    st.plotly_chart(fig, use_container_width=True)
+                st.markdown("### 📈 Top Categorias")
+                top_cats = df_filtered.groupby('product_category')['total_revenue'].sum().nlargest(3)
+                for cat, val in top_cats.items():
+                    st.markdown(f"- **{cat}:** ${val:,.0f}")
 
 
 if __name__ == "__main__":
