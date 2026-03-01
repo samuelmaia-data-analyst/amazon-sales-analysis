@@ -1,0 +1,46 @@
+.main-header {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, #FF9900, #146EB4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0;
+}
+.sub-header {
+    font-size: 1.2rem;
+    color: #666;
+    margin-top: -10px;
+    margin-bottom: 30px;
+}
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+.insight-box {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 5px solid #FF9900;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    backdrop-filter: blur(10px);
+}
+.stTabs [data-baseweb="tab-list"] {
+    gap: 24px;
+}
+.stTabs [data-baseweb="tab"] {
+    height: 50px;
+    white-space: pre-wrap;
+    background-color: transparent;
+    border-radius: 10px 10px 0 0;
+    gap: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-weight: 600;
+}
+.stTabs [aria-selected="true"] {
+    background-color: #FF9900;
+    color: white !important;
+}

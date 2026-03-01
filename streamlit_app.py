@@ -69,13 +69,25 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+BASE_DIR = Path(__file__).parent
+CSS_PATH = BASE_DIR / "assets" / "custom.css"
+
+if not CSS_PATH.exists():
+    raise FileNotFoundError(f"Arquivo CSS não encontrado: {CSS_PATH}")
+
+st.markdown(f"<style>{CSS_PATH.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+
 
 # Carregar dados
 @st.cache_data(ttl=3600)
 def load_data():
     """Carrega e prepara os dados com feature engineering."""
-    BASE_DIR = Path(__file__).parent
     DATA_PATH = BASE_DIR / "data" / "processed" / "amazon_sales_clean.csv"
+
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(
+            f"Arquivo de dados processados não encontrado: {DATA_PATH}. Execute 'python main.py' para gerar o dataset."
+        )
 
     df = pd.read_csv(DATA_PATH, parse_dates=["order_date"])
 
@@ -86,12 +98,15 @@ def load_data():
     df['quarter'] = df['order_date'].dt.quarter
     df['day_of_week'] = df['order_date'].dt.day_name()
     df['is_weekend'] = df['day_of_week'].isin(['Saturday', 'Sunday'])
-    df['week'] = df['order_date'].dt.isocalendar().week
+    df['week'] = df['order_date'].dt.isocalendar().week.astype(int)
 
     # Métricas derivadas
     df['revenue_per_unit'] = df['total_revenue'] / df['quantity_sold']
     df['discount_impact'] = (df['price'] * df['quantity_sold']) - df['total_revenue']
     df['profit_margin'] = (df['total_revenue'] - df['discount_impact']) / df['total_revenue'] * 100
+    df['discount_impact_pct'] = (
+        (df['discount_impact'] / (df['price'] * df['quantity_sold']).replace(0, pd.NA)) * 100
+    ).fillna(0)
 
     return df
 

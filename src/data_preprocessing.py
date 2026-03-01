@@ -8,6 +8,22 @@ RAW_SUBDIR = "amazon_sales"
 RAW_FILENAME = "amazon_sales_dataset.csv"
 PROCESSED_FILENAME = "amazon_sales_clean.csv"
 
+REQUIRED_COLUMNS = {
+    "order_id",
+    "order_date",
+    "product_id",
+    "product_category",
+    "price",
+    "discount_percent",
+    "quantity_sold",
+    "customer_region",
+    "payment_method",
+    "rating",
+    "review_count",
+    "discounted_price",
+    "total_revenue",
+}
+
 
 def load_raw_sales_data() -> pd.DataFrame:
     """
@@ -41,6 +57,11 @@ def clean_sales_data(df: pd.DataFrame) -> pd.DataFrame:
     - discounted_price (float)
     - total_revenue (float)
     """
+    missing_columns = REQUIRED_COLUMNS - set(df.columns)
+    if missing_columns:
+        missing = ", ".join(sorted(missing_columns))
+        raise ValueError(f"Colunas obrigatórias ausentes no dataset: {missing}")
+
     df = df.copy()
 
     # Garantir tipos adequados
@@ -61,15 +82,22 @@ def clean_sales_data(df: pd.DataFrame) -> pd.DataFrame:
 
     # Remover linhas sem data ou sem receita total
     df = df.dropna(subset=["order_date", "total_revenue"])
+    # Remover linhas sem data, preço ou quantidade
+    df = df.dropna(subset=["order_date", "price", "discount_percent", "quantity_sold"])
 
     # Remover vendas com quantidade <= 0
     df = df[df["quantity_sold"] > 0]
+    # Corrigir limites conhecidos do domínio
+    df = df[(df["quantity_sold"] > 0) & (df["price"] >= 0)]
+    df["discount_percent"] = df["discount_percent"].clip(lower=0, upper=100)
+    df["rating"] = df["rating"].clip(lower=0, upper=5)
 
     # Recalcular total_revenue e discounted_price para consistência
     df["discounted_price_calc"] = df["price"] * (1 - df["discount_percent"] / 100)
     df["total_revenue_calc"] = df["discounted_price_calc"] * df["quantity_sold"]
 
     # Se a diferença for pequena, substitui pelos valores calculados
+    # Priorizar valores calculados para garantir consistência
     df["total_revenue"] = df["total_revenue_calc"]
     df["discounted_price"] = df["discounted_price_calc"]
 
