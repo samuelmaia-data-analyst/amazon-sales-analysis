@@ -1,5 +1,28 @@
 ﻿# Amazon Sales Analysis (EN)
 
+## Language Switch
+- Main README: [../README.md](../README.md)
+- Portugues (BR): [README.pt-BR.md](README.pt-BR.md)
+
+## Summary
+- Business problem: discount leakage impacting net revenue.
+- Audience: revenue leaders and category managers.
+- North Star Metric: Net Revenue Retained (NRR).
+- Value case: +$252.3K at 5% leakage recovery.
+
+## Table of Contents
+- [Executive Summary](#executive-summary)
+- [Problem](#problem)
+- [Approach](#approach)
+- [Key Insights](#key-insights)
+- [Expected Impact](#expected-impact)
+- [Methodology](#methodology)
+- [Dataset Source](#dataset-source)
+- [Architecture](#architecture)
+- [How to Run](#how-to-run)
+- [Docker](#docker)
+- [Contact](#contact)
+
 ## Executive Summary
 This project solves a strategic pricing problem: discount practices are increasing volume but leaking significant net revenue.
 
@@ -58,3 +81,6 @@ docker run --rm -p 8501:8501 amazon-sales-analytics
 - GitHub: https://github.com/samuelmaia-data-analyst
 - LinkedIn: https://linkedin.com/in/samuelmaia-data-analyst
 - Email: smaia2@gmail.com
+
+
+

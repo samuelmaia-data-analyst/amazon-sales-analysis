@@ -1,5 +1,30 @@
 ﻿# Amazon Sales Analytics | Business Impact Portfolio
 
+## Language
+- English: [docs/README.en.md](docs/README.en.md)
+- Portugues (BR): [docs/README.pt-BR.md](docs/README.pt-BR.md)
+
+## Summary
+- Business problem: revenue leakage from discount strategy.
+- Audience: Revenue Ops, Sales Leadership, Category Managers.
+- North Star Metric: Net Revenue Retained (NRR).
+- Financial upside: +$252.3K with 5% leakage recovery scenario.
+
+## Table of Contents
+- [Executive Summary](#executive-summary)
+- [Business Problem](#business-problem)
+- [Dataset](#dataset)
+- [Methodology](#methodology)
+- [Architecture](#architecture)
+- [Results](#results)
+- [Business Impact](#business-impact)
+- [Business Recommendations](#business-recommendations)
+- [Tech Stack](#tech-stack)
+- [How to Run](#how-to-run)
+- [Future Improvements](#future-improvements)
+- [Versioning Convention](#versioning-convention)
+- [Author](#author)
+
 ## Executive Summary
 The project addresses a strategic revenue efficiency problem: high discount leakage reduces net sales performance even when order volume is strong.
 
@@ -127,3 +152,6 @@ Samuel Maia
 - GitHub: https://github.com/samuelmaia-data-analyst
 - LinkedIn: https://linkedin.com/in/samuelmaia-data-analyst
 - Email: smaia2@gmail.com
+
+
+

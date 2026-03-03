@@ -1,5 +1,23 @@
 ﻿# Amazon Sales Analysis (PT-BR)
 
+## Troca de Idioma
+- README principal: [../README.md](../README.md)
+- English: [README.en.md](README.en.md)
+
+## Resumo Executivo
+- Problema de negocio: leakage de receita por descontos.
+- Publico-alvo: lideranca comercial, Revenue Ops e gestores de categoria.
+- North Star Metric: Net Revenue Retained (NRR).
+- Potencial financeiro: +$252,3K ao recuperar 5% do leakage.
+
+## Sumario
+- [Visao do Projeto](#visao-do-projeto)
+- [Diferenciais para Recrutadores e Leads](#diferenciais-para-recrutadores-e-leads)
+- [Fonte do Dataset](#fonte-do-dataset)
+- [Executar Localmente](#executar-localmente)
+- [Stack](#stack)
+- [Contato](#contato)
+
 ## Visao do Projeto
 Este projeto demonstra um fluxo completo de dados aplicado a vendas da Amazon:
 - ingestao automatizada via Kaggle Hub;
@@ -33,3 +51,6 @@ Python, Pandas, Plotly, Streamlit, Seaborn, Matplotlib, Pytest.
 - GitHub: https://github.com/samuelmaia-data-analyst
 - LinkedIn: https://linkedin.com/in/samuelmaia-data-analyst
 - Email: smaia2@gmail.com
+
+
+
