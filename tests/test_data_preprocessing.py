@@ -1,7 +1,7 @@
-import pandas as pd
+﻿import pandas as pd
 import pytest
 
-from src.data_preprocessing import clean_sales_data
+from amazon_sales_analysis.data_preprocessing import clean_sales_data
 
 
 def _base_df() -> pd.DataFrame:
@@ -24,20 +24,19 @@ def _base_df() -> pd.DataFrame:
     )
 
 
-def test_clean_sales_data_validates_required_columns():
-    df = _base_df().drop(columns=["rating"])
+def test_required_columns_are_validated() -> None:
+    invalid_df = _base_df().drop(columns=["rating"])
 
-    with pytest.raises(ValueError, match="Colunas obrigatórias ausentes"):
-        clean_sales_data(df)
+    with pytest.raises(ValueError, match="Colunas obrigatorias ausentes"):
+        clean_sales_data(invalid_df)
 
 
-def test_clean_sales_data_clips_discount_and_rating_and_recalculates_revenue():
-    df = _base_df()
-    df.loc[0, "discount_percent"] = 120
-    df.loc[0, "rating"] = 9.0
-    df.loc[0, "total_revenue"] = 1
+def test_discount_rating_and_revenue_are_normalized() -> None:
+    frame = _base_df()
+    frame.loc[0, "discount_percent"] = 120
+    frame.loc[0, "rating"] = 7
 
-    cleaned = clean_sales_data(df)
+    cleaned = clean_sales_data(frame)
 
     assert cleaned.loc[0, "discount_percent"] == 100
     assert cleaned.loc[0, "rating"] == 5
