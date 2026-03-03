@@ -7,11 +7,13 @@ sys.path.insert(0, str(ROOT_DIR / "src"))
 
 from amazon_sales_analysis.data_ingestion import download_amazon_sales_dataset
 from amazon_sales_analysis.data_preprocessing import clean_sales_data, load_raw_sales_data, save_processed_data
+from amazon_sales_analysis.decision_engine import build_actionable_recommendations
 from amazon_sales_analysis.eda import basic_eda
 from amazon_sales_analysis.evaluation import build_executive_summary
 from amazon_sales_analysis.feature_engineering import build_features
 from amazon_sales_analysis.logging_config import configure_logging
 from amazon_sales_analysis.modeling import rank_discount_opportunities
+from amazon_sales_analysis.table_organization import build_executive_tables
 from amazon_sales_analysis.visualization import sales_trend_over_time, top_categories_by_sales
 from amazon_sales_analysis.config import TABLES_DIR
 
@@ -42,15 +44,23 @@ def main() -> None:
     logger.info("[6/7] Evaluating business impact and opportunities")
     executive_summary = build_executive_summary(featured_df)
     opportunities = rank_discount_opportunities(featured_df)
+    recommendations = build_actionable_recommendations(featured_df)
+    organized_tables = build_executive_tables(featured_df)
 
     TABLES_DIR.mkdir(parents=True, exist_ok=True)
     executive_path = TABLES_DIR / "executive_summary.csv"
     opportunities_path = TABLES_DIR / "discount_opportunities.csv"
+    recommendations_path = TABLES_DIR / "actionable_recommendations.csv"
     executive_summary.to_csv(executive_path, index=False)
     opportunities.to_csv(opportunities_path, index=False)
+    recommendations.to_csv(recommendations_path, index=False)
+
+    for table_name, table_df in organized_tables.items():
+        table_df.to_csv(TABLES_DIR / f"{table_name}.csv", index=False)
 
     logger.info("Executive summary saved to: %s", executive_path)
     logger.info("Opportunities table saved to: %s", opportunities_path)
+    logger.info("Actionable recommendations saved to: %s", recommendations_path)
     logger.info("[7/7] Pipeline completed successfully")
 
 

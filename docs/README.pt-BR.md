@@ -10,6 +10,12 @@
 - North Star Metric: Net Revenue Retained (NRR).
 - Potencial financeiro: +$252,3K ao recuperar 5% do leakage.
 
+## Metricas de Negocio
+- Receita Liquida: **$32,87M**
+- Leakage de Desconto: **$5,05M**
+- North Star (NRR): **86,69%**
+- Upside com 5% de recuperacao: **+$252,3K**
+
 ## Sumario
 - [Visao do Projeto](#visao-do-projeto)
 - [Diferenciais para Recrutadores e Leads](#diferenciais-para-recrutadores-e-leads)

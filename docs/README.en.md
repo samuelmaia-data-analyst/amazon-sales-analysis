@@ -10,6 +10,12 @@
 - North Star Metric: Net Revenue Retained (NRR).
 - Value case: +$252.3K at 5% leakage recovery.
 
+## Business Metrics Snapshot
+- Net Revenue: **$32.87M**
+- Discount Leakage: **$5.05M**
+- North Star (NRR): **86.69%**
+- Upside at 5% leakage recovery: **+$252.3K**
+
 ## Table of Contents
 - [Executive Summary](#executive-summary)
 - [Problem](#problem)

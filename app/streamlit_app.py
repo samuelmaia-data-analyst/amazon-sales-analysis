@@ -9,6 +9,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT_DIR / "src"))
 
 from amazon_sales_analysis.analytics import add_derived_metrics, summarize_kpis
+from amazon_sales_analysis.decision_engine import build_actionable_recommendations
+from amazon_sales_analysis.table_organization import build_executive_tables
 
 ASSETS_CSS = ROOT_DIR / "assets" / "custom.css"
 DATASET_PATH = ROOT_DIR / "data" / "processed" / "amazon_sales_clean.csv"
@@ -141,8 +143,10 @@ def render_exec_dashboard(df: pd.DataFrame) -> None:
         st.plotly_chart(fig, use_container_width=True)
 
     monthly = (
-        df.groupby(pd.Grouper(key="order_date", freq="ME"), as_index=False)["total_revenue"]
+        df.set_index("order_date")["total_revenue"]
+        .resample("ME")
         .sum()
+        .reset_index()
         .sort_values("order_date")
     )
     trend = px.line(
@@ -185,6 +189,10 @@ def render_recruiter_section(df: pd.DataFrame) -> None:
     fig.update_layout(margin=dict(l=10, r=10, t=50, b=10), coloraxis_showscale=False)
     st.plotly_chart(fig, use_container_width=True)
 
+    st.subheader("Camada de Decisao Acionavel")
+    recommendations = build_actionable_recommendations(df)
+    st.dataframe(recommendations, use_container_width=True, hide_index=True)
+
 
 def render_data_quality(df: pd.DataFrame) -> None:
     summary = pd.DataFrame(
@@ -208,6 +216,30 @@ def render_data_quality(df: pd.DataFrame) -> None:
     st.dataframe(summary, use_container_width=True, hide_index=True)
 
 
+def render_executive_tables(df: pd.DataFrame) -> None:
+    tables = build_executive_tables(df)
+
+    st.subheader("KPI Summary")
+    st.dataframe(tables["kpi_summary"], use_container_width=True, hide_index=True)
+
+    st.subheader("Category Performance")
+    st.dataframe(tables["category_performance"], use_container_width=True, hide_index=True)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Regional Performance")
+        st.dataframe(tables["regional_performance"], use_container_width=True, hide_index=True)
+    with col2:
+        st.subheader("Payment Performance")
+        st.dataframe(tables["payment_performance"], use_container_width=True, hide_index=True)
+
+    st.subheader("Monthly Trend")
+    st.dataframe(tables["monthly_trend"], use_container_width=True, hide_index=True)
+
+    st.subheader("Data Quality Audit")
+    st.dataframe(tables["data_quality_audit"], use_container_width=True, hide_index=True)
+
+
 def main() -> None:
     render_header()
 
@@ -224,8 +256,8 @@ def main() -> None:
 
     render_kpis(filtered_df, df_all)
 
-    tab1, tab2, tab3 = st.tabs(
-        ["Dashboard Executivo", "Perfil para Recrutadores", "Qualidade dos Dados"]
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["Dashboard Executivo", "Perfil para Recrutadores", "Qualidade dos Dados", "Tabelas Executivas"]
     )
     with tab1:
         render_exec_dashboard(filtered_df)
@@ -233,6 +265,8 @@ def main() -> None:
         render_recruiter_section(filtered_df)
     with tab3:
         render_data_quality(filtered_df)
+    with tab4:
+        render_executive_tables(filtered_df)
 
 
 if __name__ == "__main__":
