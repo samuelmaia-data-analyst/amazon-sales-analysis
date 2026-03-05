@@ -27,6 +27,8 @@
 - [Business Recommendations](#business-recommendations)
 - [Tech Stack](#tech-stack)
 - [How to Run](#how-to-run)
+- [API Examples](#api-examples)
+- [Visual Snapshots](#visual-snapshots)
 - [Quality and Contracts](#quality-and-contracts)
 - [CI and Metrics](#ci-and-metrics)
 - [Release Process](#release-process)
@@ -149,6 +151,55 @@ uvicorn app.api:app --reload
 docker build -t amazon-sales-analytics .
 docker run --rm -p 8501:8501 amazon-sales-analytics
 ```
+
+## API Examples
+Base URL (local): `http://127.0.0.1:8000`
+
+```bash
+uvicorn app.api:app --reload
+```
+
+`GET /metrics/summary`
+```json
+{
+  "total_revenue": 32866579.536,
+  "gross_revenue": 37913104.54000001,
+  "discount_leakage": 5046525.004000008,
+  "north_star_nrr": 0.866892330099855,
+  "total_orders": 50000.0,
+  "avg_ticket": 657.33159072
+}
+```
+
+`GET /metrics/opportunities` (sample)
+```json
+[
+  {
+    "product_category": "Beauty",
+    "total_revenue": 5550626.229,
+    "discount_value": 854360.231,
+    "discount_to_revenue_ratio": 0.15392141278335028
+  }
+]
+```
+
+`GET /alerts/discount-spikes` (sample)
+```json
+[
+  {
+    "order_date": "2022-10-31",
+    "product_category": "Fashion",
+    "avg_discount_percent": 21.363636363636363,
+    "z_score": 2.696544107570046,
+    "estimated_leakage_usd": 933.6917756183568,
+    "severity": "medium"
+  }
+]
+```
+
+## Visual Snapshots
+![Sales Trend](reports/figures/sales_trend_over_time.png)
+![Top Categories](reports/figures/top_categories_by_sales.png)
 
 ## Quality and Contracts
 - Raw data contract is versioned at `contracts/sales_dataset.contract.json`.

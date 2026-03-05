@@ -27,6 +27,8 @@
 - [Architecture](#architecture)
 - [How to Run](#how-to-run)
 - [Docker](#docker)
+- [API Examples](#api-examples)
+- [Visual Snapshots](#visual-snapshots)
 - [Quality and Contracts](#quality-and-contracts)
 - [CI and Product Metrics](#ci-and-product-metrics)
 - [Release Process](#release-process)
@@ -84,6 +86,36 @@ python main.py
 streamlit run app/streamlit_app.py
 uvicorn app.api:app --reload
 ```
+
+## API Examples
+`GET /metrics/summary` (sample)
+```json
+{
+  "total_revenue": 32866579.536,
+  "gross_revenue": 37913104.54000001,
+  "discount_leakage": 5046525.004000008,
+  "north_star_nrr": 0.866892330099855,
+  "total_orders": 50000.0,
+  "avg_ticket": 657.33159072
+}
+```
+
+`GET /alerts/discount-spikes` (sample)
+```json
+[
+  {
+    "order_date": "2022-10-31",
+    "product_category": "Fashion",
+    "z_score": 2.696544107570046,
+    "estimated_leakage_usd": 933.6917756183568,
+    "severity": "medium"
+  }
+]
+```
+
+## Visual Snapshots
+![Sales Trend](../reports/figures/sales_trend_over_time.png)
+![Top Categories](../reports/figures/top_categories_by_sales.png)
 
 ## Docker
 ```bash

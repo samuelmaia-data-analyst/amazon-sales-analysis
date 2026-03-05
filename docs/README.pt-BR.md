@@ -21,6 +21,8 @@
 - [Diferenciais para Recrutadores e Leads](#diferenciais-para-recrutadores-e-leads)
 - [Fonte do Dataset](#fonte-do-dataset)
 - [Executar Localmente](#executar-localmente)
+- [Exemplos de API](#exemplos-de-api)
+- [Snapshots Visuais](#snapshots-visuais)
 - [Qualidade e Contratos](#qualidade-e-contratos)
 - [CI e Métricas de Produto](#ci-e-métricas-de-produto)
 - [Processo de Release](#processo-de-release)
@@ -57,6 +59,36 @@ python scripts/run_pipeline.py
 streamlit run app/streamlit_app.py
 uvicorn app.api:app --reload
 ```
+
+## Exemplos de API
+`GET /metrics/summary` (exemplo)
+```json
+{
+  "total_revenue": 32866579.536,
+  "gross_revenue": 37913104.54000001,
+  "discount_leakage": 5046525.004000008,
+  "north_star_nrr": 0.866892330099855,
+  "total_orders": 50000.0,
+  "avg_ticket": 657.33159072
+}
+```
+
+`GET /alerts/discount-spikes` (exemplo)
+```json
+[
+  {
+    "order_date": "2022-10-31",
+    "product_category": "Fashion",
+    "z_score": 2.696544107570046,
+    "estimated_leakage_usd": 933.6917756183568,
+    "severity": "medium"
+  }
+]
+```
+
+## Snapshots Visuais
+![Tendência de Vendas](../reports/figures/sales_trend_over_time.png)
+![Top Categorias](../reports/figures/top_categories_by_sales.png)
 
 ## Qualidade e Contratos
 - Contrato do dataset bruto: `contracts/sales_dataset.contract.json`
