@@ -229,21 +229,37 @@ def render_kpis(df_filtered: pd.DataFrame, df_all: pd.DataFrame, lang: str) -> N
         (kpis["total_orders"] / baseline["total_orders"] * 100) if baseline["total_orders"] else 0
     )
 
-    col1, col2, col3, col4, col5, col6 = st.columns(6)
-    col1.metric(
+    def fmt_currency_compact(value: float) -> str:
+        if abs(value) >= 1_000_000:
+            return f"${value / 1_000_000:.2f}M"
+        if abs(value) >= 1_000:
+            return f"${value / 1_000:.1f}K"
+        return f"${value:,.0f}"
+
+    def fmt_number_compact(value: float) -> str:
+        if abs(value) >= 1_000_000:
+            return f"{value / 1_000_000:.2f}M"
+        if abs(value) >= 1_000:
+            return f"{value / 1_000:.1f}K"
+        return f"{value:,.0f}"
+
+    row1_col1, row1_col2, row1_col3 = st.columns(3)
+    row2_col1, row2_col2, row2_col3 = st.columns(3)
+
+    row1_col1.metric(
         t(lang, "kpi_revenue"),
-        f"${kpis['total_revenue']:,.0f}",
+        fmt_currency_compact(kpis["total_revenue"]),
         f"{coverage:.1f}% {t(lang, 'of_total')}",
     )
-    col2.metric(
+    row1_col2.metric(
         t(lang, "kpi_orders"),
-        f"{kpis['total_orders']:,.0f}",
+        fmt_number_compact(kpis["total_orders"]),
         f"{order_share:.1f}% {t(lang, 'of_total')}",
     )
-    col3.metric(t(lang, "kpi_units"), f"{kpis['total_units']:,.0f}")
-    col4.metric(t(lang, "kpi_ticket"), f"${kpis['avg_ticket']:,.2f}")
-    col5.metric(t(lang, "kpi_rating"), f"{kpis['avg_rating']:.2f}")
-    col6.metric(t(lang, "kpi_nrr"), f"{kpis['net_revenue_retained'] * 100:.2f}%")
+    row1_col3.metric(t(lang, "kpi_units"), fmt_number_compact(kpis["total_units"]))
+    row2_col1.metric(t(lang, "kpi_ticket"), f"${kpis['avg_ticket']:,.2f}")
+    row2_col2.metric(t(lang, "kpi_rating"), f"{kpis['avg_rating']:.2f}")
+    row2_col3.metric(t(lang, "kpi_nrr"), f"{kpis['net_revenue_retained'] * 100:.2f}%")
 
 
 def render_exec_dashboard(df: pd.DataFrame, lang: str) -> None:

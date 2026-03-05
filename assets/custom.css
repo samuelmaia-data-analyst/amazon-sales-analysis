@@ -7,6 +7,13 @@
     --white: #ffffff;
 }
 
+[data-testid="stAppViewContainer"] .main .block-container {
+    max-width: 1440px;
+    padding-top: 1.25rem;
+    padding-left: 2.25rem;
+    padding-right: 2.25rem;
+}
+
 .main-header {
     font-size: 2.8rem;
     font-weight: 900;
@@ -51,4 +58,11 @@
 
 [data-testid="stSidebar"] h3 {
     margin-top: 0.2rem;
+}
+
+@media (max-width: 1200px) {
+    [data-testid="stAppViewContainer"] .main .block-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
 }
