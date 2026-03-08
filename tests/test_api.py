@@ -1,6 +1,7 @@
 import pandas as pd
-from app import api
 from fastapi.testclient import TestClient
+
+from app import api
 
 
 def test_revenue_metrics_v1_endpoint(tmp_path) -> None:

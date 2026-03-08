@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import ModuleType
 
 import pandas as pd
 
+pa: ModuleType | None
 try:
     import pandera.pandas as pa
 except ModuleNotFoundError:  # pragma: no cover - exercised in environments without pandera
