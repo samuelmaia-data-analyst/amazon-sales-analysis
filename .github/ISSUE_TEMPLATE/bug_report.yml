@@ -1,0 +1,33 @@
+name: Bug Report
+description: Report a defect or regression in the analytics pipeline, API, or dashboard.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the problem and expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide a deterministic sequence of actions or input files.
+      placeholder: |
+        1. Run ...
+        2. Open ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Business or technical impact
+      description: Explain why this matters.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, traces, or screenshots
+      description: Paste the relevant evidence.

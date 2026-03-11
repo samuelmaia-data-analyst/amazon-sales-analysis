@@ -1,37 +1,46 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from types import ModuleType
 
 import pandas as pd
 
-pa: ModuleType | None
 try:
-    import pandera.pandas as pa
+    import pandera.pandas as pandera
 except ModuleNotFoundError:  # pragma: no cover - exercised in environments without pandera
-    pa = None
+    pandera = None
 
 
-if pa is not None:
-    sales_schema = pa.DataFrameSchema(
+if pandera is not None:
+    sales_schema = pandera.DataFrameSchema(
         {
-            "order_id": pa.Column(float, nullable=False, coerce=True),
-            "order_date": pa.Column(str, nullable=False, coerce=True),
-            "product_id": pa.Column(float, nullable=False, coerce=True),
-            "product_category": pa.Column(str, nullable=False, coerce=True),
-            "price": pa.Column(float, nullable=False, coerce=True, checks=pa.Check.ge(0)),
-            "discount_percent": pa.Column(
-                float, nullable=False, coerce=True, checks=[pa.Check.ge(0), pa.Check.le(100)]
+            "order_id": pandera.Column(float, nullable=False, coerce=True),
+            "order_date": pandera.Column(str, nullable=False, coerce=True),
+            "product_id": pandera.Column(float, nullable=False, coerce=True),
+            "product_category": pandera.Column(str, nullable=False, coerce=True),
+            "price": pandera.Column(float, nullable=False, coerce=True, checks=pandera.Check.ge(0)),
+            "discount_percent": pandera.Column(
+                float,
+                nullable=False,
+                coerce=True,
+                checks=[pandera.Check.ge(0), pandera.Check.le(100)],
             ),
-            "quantity_sold": pa.Column(float, nullable=False, coerce=True, checks=pa.Check.gt(0)),
-            "customer_region": pa.Column(str, nullable=True, coerce=True),
-            "payment_method": pa.Column(str, nullable=True, coerce=True),
-            "rating": pa.Column(
-                float, nullable=True, coerce=True, checks=[pa.Check.ge(0), pa.Check.le(5)]
+            "quantity_sold": pandera.Column(
+                float, nullable=False, coerce=True, checks=pandera.Check.gt(0)
             ),
-            "review_count": pa.Column(float, nullable=True, coerce=True, checks=pa.Check.ge(0)),
-            "discounted_price": pa.Column(float, nullable=True, coerce=True, checks=pa.Check.ge(0)),
-            "total_revenue": pa.Column(float, nullable=True, coerce=True, checks=pa.Check.ge(0)),
+            "customer_region": pandera.Column(str, nullable=True, coerce=True),
+            "payment_method": pandera.Column(str, nullable=True, coerce=True),
+            "rating": pandera.Column(
+                float, nullable=True, coerce=True, checks=[pandera.Check.ge(0), pandera.Check.le(5)]
+            ),
+            "review_count": pandera.Column(
+                float, nullable=True, coerce=True, checks=pandera.Check.ge(0)
+            ),
+            "discounted_price": pandera.Column(
+                float, nullable=True, coerce=True, checks=pandera.Check.ge(0)
+            ),
+            "total_revenue": pandera.Column(
+                float, nullable=True, coerce=True, checks=pandera.Check.ge(0)
+            ),
         },
         strict=False,
         coerce=True,
@@ -41,6 +50,7 @@ else:
     @dataclass
     class _FallbackSchema:
         def validate(self, df: pd.DataFrame, lazy: bool = True) -> pd.DataFrame:
+            del lazy
             required_columns = {
                 "order_id",
                 "order_date",

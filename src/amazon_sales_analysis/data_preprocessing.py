@@ -1,4 +1,5 @@
-﻿from pathlib import Path
+from pathlib import Path
+from typing import cast
 
 import pandas as pd
 
@@ -53,7 +54,8 @@ def clean_sales_data(df: pd.DataFrame) -> pd.DataFrame:
 
 def validate_raw_sales_data(df: pd.DataFrame) -> pd.DataFrame:
     try:
-        return sales_schema.validate(df, lazy=True)
+        validated = sales_schema.validate(df, lazy=True)
+        return cast(pd.DataFrame, validated)
     except Exception as exc:
         raise ValueError(f"Falha na validacao do schema com pandera: {exc}") from exc
 

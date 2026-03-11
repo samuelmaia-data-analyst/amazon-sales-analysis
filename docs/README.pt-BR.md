@@ -1,64 +1,63 @@
-﻿# Amazon Sales Analysis (PT-BR)
+# Amazon Sales Analysis (PT-BR)
 
 ## Troca de Idioma
 - README principal: [../README.md](../README.md)
-- English: [README.en.md](README.en.md)
+- International: [README.en.md](README.en.md)
 
-## Resumo Executivo
-- Problema de negócio: leakage de receita por descontos.
-- Público-alvo: liderança comercial, Revenue Ops e gestores de categoria.
+## Resumo
+- Problema de negócio: leakage de desconto reduzindo a receita líquida.
+- Público-alvo: liderança comercial, gestores de categoria e operações.
 - North Star Metric: Net Revenue Retained (NRR).
 - Potencial financeiro: +$252,3K ao recuperar 5% do leakage.
 
-## Métricas de Negócio
+## Snapshot de Métricas
 - Receita Líquida: **$32,87M**
 - Leakage de Desconto: **$5,05M**
 - North Star (NRR): **86,69%**
 - Upside com 5% de recuperação: **+$252,3K**
 
-## Sumário
-- [Visão do Projeto](#visão-do-projeto)
-- [Diferenciais para Recrutadores e Leads](#diferenciais-para-recrutadores-e-leads)
-- [Fonte do Dataset](#fonte-do-dataset)
-- [Executar Localmente](#executar-localmente)
-- [Exemplos de API](#exemplos-de-api)
-- [Snapshots Visuais](#snapshots-visuais)
-- [Qualidade e Contratos](#qualidade-e-contratos)
-- [CI e Métricas de Produto](#ci-e-métricas-de-produto)
-- [Processo de Release](#processo-de-release)
-- [Cadência de Decisão](#cadência-de-decisão)
-- [Stack](#stack)
-- [Contato](#contato)
+## Escopo do Projeto
+Este projeto entrega uma stack analítica orientada a negócio para operações de vendas no estilo Amazon:
+- pipeline reproduzível com contratos de schema e quality gates;
+- feature engineering para KPIs executivos e métricas de leakage;
+- endpoints FastAPI para métricas consolidadas e alertas operacionais;
+- dashboard Streamlit com seleção de idioma `International` e `PT-BR`;
+- simulador de cenários e alertas de anomalia para revisão executiva.
 
-## Visão do Projeto
-Este projeto demonstra um fluxo completo de dados aplicado a vendas da Amazon:
-- ingestão automatizada via Kaggle Hub;
-- limpeza com regras de consistência;
-- análise exploratória e visualizações executivas;
-- dashboard Streamlit com foco em decisão e storytelling de negócio;
-- simulador de cenários por categoria para recuperação de leakage;
-- detecção de anomalias de picos de desconto com export de alertas;
-- API FastAPI para expor métricas e alertas para integração com BI.
-
-## Diferenciais para Recrutadores e Leads
-- Estrutura em camadas, orientada à manutenção.
-- Pipeline reproduzível (`scripts/run_pipeline.py`).
-- Qualidade de dados validada por testes.
-- App com filtros de negócio e métricas acionáveis.
-
-## Fonte do Dataset
-- Kaggle: `aliiihussain/amazon-sales-dataset`
-- Link: https://www.kaggle.com/datasets/aliiihussain/amazon-sales-dataset
-
-## Executar Localmente
+## Como Executar
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-python scripts/run_pipeline.py
-streamlit run app/streamlit_app.py
+git clone https://github.com/samuelmaia-analytics/amazon-sales-analysis.git
+cd amazon-sales-analysis
+python -m pip install -e .[dev]
+pre-commit install
+python -m amazon_sales_analysis.cli.pipeline
 uvicorn app.api:app --reload
+streamlit run app/streamlit_app.py
 ```
+
+## Scripts de Console
+```bash
+amazon-sales-pipeline
+amazon-sales-alerts
+amazon-sales-scenario
+```
+
+## Comandos de Qualidade
+```bash
+python -m pip install -e .[dev]
+pre-commit run --all-files
+black --check .
+isort --check-only src scripts app alerts tests main.py streamlit_app.py scenario_simulation.py
+ruff check .
+mypy src scripts app alerts tests
+pytest
+```
+
+## CI e Governança
+- A CI valida formatação, lint, tipagem, testes e cobertura (`>=70%`).
+- O workflow de release verifica consistência entre versão e changelog antes de publicar.
+- Templates de PR e issue estão disponíveis em `.github/`.
+- CODEOWNERS foi configurado para governança do repositório.
 
 ## Exemplos de API
 `GET /api/v1/revenue_metrics` (exemplo)
@@ -86,60 +85,7 @@ uvicorn app.api:app --reload
 ]
 ```
 
-## Snapshots Visuais
-![Tendência de Vendas](../reports/figures/sales_trend_over_time.png)
-![Top Categorias](../reports/figures/top_categories_by_sales.png)
-
-## Qualidade e Contratos
-- Contrato do dataset bruto: `contracts/sales_dataset.contract.json`
-- Contrato de métricas: `contracts/product_metrics.contract.json`
-- Gates no pipeline:
-  - validação de esquema de entrada
-  - validações de domínio no dataset limpo
-  - geração de métricas em `reports/metrics/product_metrics.json`
-  - export de alertas em `reports/tables/discount_spike_alerts.csv`
-
-### Comandos de Qualidade
-```bash
-pip install -r requirements-dev.txt
-black --check .
-isort --check-only .
-ruff check .
-mypy src scripts
-pytest
-```
-
-## CI e Métricas de Produto
-- Workflow: `.github/workflows/ci.yml`
-- Gates: formatação, lint, tipagem, testes e cobertura (`>=70%`)
-- Artefatos de CI:
-  - `reports/metrics/coverage.xml`
-  - `reports/metrics/pytest-results.xml`
-
-## Processo de Release
-1. Atualizar o `CHANGELOG.md` com a nova versão.
-2. Atualizar versão:
-   ```bash
-   python scripts/bump_version.py 1.0.0
-   ```
-3. Criar tag e enviar:
-   ```bash
-   git tag v1.0.0
-   git push origin main --tags
-   ```
-4. O workflow `.github/workflows/release.yml` valida coerência de versão/changelog e publica o release.
-
-## Cadência de Decisão
-- Semanal: acompanhar `north_star_nrr` e `discount_leakage`, revisando os alertas de `reports/tables/discount_spike_alerts.csv`.
-- Mensal: revisar e recalibrar thresholds de desconto por categoria com base no Scenario Simulator.
-
-## Stack
-Python, Pandas, Plotly, Streamlit, FastAPI, Seaborn, Matplotlib, Pytest.
-
 ## Contato
 - GitHub: https://github.com/samuelmaia-analytics
 - LinkedIn: https://linkedin.com/in/samuelmaia-analytics
 - Email: smaia2@gmail.com
-
-
-

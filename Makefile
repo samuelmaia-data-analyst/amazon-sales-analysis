@@ -1,12 +1,24 @@
 PYTHON ?= python
 
-.PHONY: pipeline alerts scenario
+.PHONY: setup-dev quality test pipeline alerts scenario
+
+setup-dev:
+	$(PYTHON) -m pip install -e .[dev]
+
+quality:
+	black --check .
+	isort --check-only .
+	ruff check .
+	mypy src scripts app alerts
+
+test:
+	pytest
 
 pipeline:
-	$(PYTHON) scripts/run_pipeline.py
+	$(PYTHON) -m amazon_sales_analysis.cli.pipeline
 
 alerts:
-	$(PYTHON) alerts/discount_spike_alert.py
+	$(PYTHON) -m amazon_sales_analysis.cli.alerts
 
 scenario:
-	$(PYTHON) scenario_simulation.py
+	$(PYTHON) -m amazon_sales_analysis.cli.scenario

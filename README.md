@@ -1,11 +1,11 @@
-# Amazon Sales Analytics | Business Impact Portfolio
+ï»¿# Amazon Sales Analytics | Business Impact Portfolio
 
 [![Latest Release](https://img.shields.io/github/v/release/samuelmaia-analytics/amazon-sales-analysis?display_name=release)](https://github.com/samuelmaia-analytics/amazon-sales-analysis/releases)
 [![Release Notes](https://img.shields.io/badge/Release%20Notes-CHANGELOG-blue)](CHANGELOG.md)
 
 ## Language
-- English: [docs/README.en.md](docs/README.en.md)
-- Português (BR): [docs/README.pt-BR.md](docs/README.pt-BR.md)
+- International: [docs/README.en.md](docs/README.en.md)
+- PT-BR: [docs/README.pt-BR.md](docs/README.pt-BR.md)
 
 ## Summary
 - Business problem: revenue leakage from discount strategy.
@@ -119,6 +119,7 @@ amazon-sales-analysis/
 |-- src/amazon_sales_analysis/
 |   |-- analytics.py
 |   |-- anomaly_detection.py
+|   |-- cli/
 |   |-- config.py
 |   |-- data_ingestion.py
 |   |-- data_preprocessing.py
@@ -195,13 +196,24 @@ Gain      | +0.25M
 ## Tech Stack
 Python, Pandas, Plotly, Streamlit, FastAPI, Seaborn, Matplotlib, Pytest.
 
+## Quickstart
+```bash
+git clone https://github.com/samuelmaia-analytics/amazon-sales-analysis.git
+cd amazon-sales-analysis
+python -m pip install -e .[dev]
+pre-commit install
+make pipeline
+uvicorn app.api:app --reload
+streamlit run app/streamlit_app.py
+```
+
 ## How to Run
 ### Local
 ```bash
 git clone https://github.com/samuelmaia-analytics/amazon-sales-analysis.git
 cd amazon-sales-analysis
-pip install -r requirements.txt
-python main.py
+python -m pip install -e .[dev]
+python -m amazon_sales_analysis.cli.pipeline
 streamlit run app/streamlit_app.py
 uvicorn app.api:app --reload
 make pipeline
@@ -218,6 +230,15 @@ make scenario
 ```bash
 docker build -t amazon-sales-analytics .
 docker run --rm -p 8501:8501 amazon-sales-analytics
+```
+
+### Console Scripts
+After installation, the package exposes:
+
+```bash
+amazon-sales-pipeline
+amazon-sales-alerts
+amazon-sales-scenario
 ```
 
 ## API Examples
@@ -280,17 +301,20 @@ uvicorn app.api:app --reload
 
 ### Local Quality Commands
 ```bash
-pip install -r requirements-dev.txt
+python -m pip install -e .[dev]
+pre-commit run --all-files
 black --check .
 isort --check-only .
 ruff check .
-mypy src scripts
+mypy src scripts app alerts
 pytest
 ```
 
 ## CI and Metrics
 - CI workflow: `.github/workflows/ci.yml`
 - Gates: formatting, lint, type checking, tests and coverage threshold (`>=70%`).
+- Python version matrix: `3.12` and `3.13`.
+- Local git hooks available via `.pre-commit-config.yaml`.
 - CI artifacts exported in `reports/metrics/`:
   - `pytest-results.xml`
   - `coverage.xml`
@@ -309,6 +333,11 @@ pytest
    git push origin main --tags
    ```
 4. The release workflow validates version/changelog consistency and publishes GitHub release.
+
+## Repository Governance
+- Pull requests follow `.github/PULL_REQUEST_TEMPLATE.md`.
+- New work should start from an issue using `.github/ISSUE_TEMPLATE/`.
+- Commits follow conventional prefixes such as `feat`, `fix`, `docs`, `chore`, `refactor` and `test`.
 
 ## Decision Cadence
 - Weekly: monitor `north_star_nrr` + `discount_leakage` and review anomaly alerts in `reports/tables/discount_spike_alerts.csv`.
@@ -329,6 +358,7 @@ Samuel Maia
 - GitHub: https://github.com/samuelmaia-analytics
 - LinkedIn: https://linkedin.com/in/samuelmaia-analytics
 - Email: smaia2@gmail.com
+
 
 
 
