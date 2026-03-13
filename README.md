@@ -1,364 +1,136 @@
-ï»¿# Amazon Sales Analytics | Business Impact Portfolio
+# Amazon Commercial Performance Monitor
 
-[![Latest Release](https://img.shields.io/github/v/release/samuelmaia-analytics/amazon-sales-analysis?display_name=release)](https://github.com/samuelmaia-analytics/amazon-sales-analysis/releases)
-[![Release Notes](https://img.shields.io/badge/Release%20Notes-CHANGELOG-blue)](CHANGELOG.md)
+Projeto analitico em Python que evolui uma exploracao de dataset para um case de monitoramento de performance comercial. A proposta deixa de responder apenas "o que existe no dataset" e passa a responder "onde estao os principais drivers de receita, pressao promocional e oportunidades de acao".
 
-## Language
-- International: [docs/README.en.md](docs/README.en.md)
-- PT-BR: [docs/README.pt-BR.md](docs/README.pt-BR.md)
+## Problema de negocio
 
-## Summary
-- Business problem: revenue leakage from discount strategy.
-- Audience: Revenue Ops, Sales Leadership, Category Managers.
-- North Star Metric: Net Revenue Retained (NRR).
-- Financial upside: +$252.3K with 5% leakage recovery scenario.
+Operacoes de marketplace podem crescer em volume e, ao mesmo tempo, perder eficiencia comercial por descontos pouco controlados, categorias superconcentradas e queda de tendencia em segmentos relevantes.
 
-## Business Metrics Snapshot
-- Net Revenue: **$32.87M**
-- Discount Leakage: **$5.05M**
-- North Star (NRR): **86.69%**
-- Upside at 5% leakage recovery: **+$252.3K**
+Este projeto foi estruturado para apoiar perguntas executivas:
 
-## Table of Contents
-- [Public Releases](#public-releases)
-- [Executive Summary](#executive-summary)
-- [Business Problem](#business-problem)
-- [Dataset](#dataset)
-- [Methodology](#methodology)
-- [Architecture](#architecture)
-- [Results](#results)
-- [Business Impact](#business-impact)
-- [Business Recommendations](#business-recommendations)
-- [Action Playbook (Executive)](#action-playbook-executive)
-- [Scenario Simulation Snapshot](#scenario-simulation-snapshot)
-- [Tech Stack](#tech-stack)
-- [How to Run](#how-to-run)
-- [API Examples](#api-examples)
-- [Visual Snapshots](#visual-snapshots)
-- [Quality and Contracts](#quality-and-contracts)
-- [CI and Metrics](#ci-and-metrics)
-- [Release Process](#release-process)
-- [Decision Cadence](#decision-cadence)
-- [Future Improvements](#future-improvements)
-- [Versioning Convention](#versioning-convention)
-- [Author](#author)
+- Quanto revenue a operacao gera e qual o ticket medio?
+- Quais categorias e produtos sustentam o resultado?
+- Onde a politica promocional pressiona margem e receita?
+- A tendencia comercial esta acelerando, estavel ou em queda?
+- Quais insights acionaveis devem entrar no monitoramento semanal?
 
-## Public Releases
-The project release channel is published at:
-- GitHub Releases: https://github.com/samuelmaia-analytics/amazon-sales-analysis/releases
-- Changelog: `CHANGELOG.md`
+## O que foi refatorado
 
-Quick value from latest release line:
-- Versioned pipeline with contracts + quality gates.
-- Scenario simulation artifact (`scenario_simulation_summary.json`) for executive decisions.
-- Operational alerts for discount spikes (`discount_spike_alerts.csv`).
+- Estrutura modular para separar ingestao, validacao, transformacao, metricas, analise e visualizacao.
+- KPIs centralizados em uma camada unica de negocio.
+- Relatorio executivo com storytelling: baseline, categorias, produtos lideres, tendencia e distribuicao de performance.
+- Insights automaticos para resumir principais achados.
+- Validacoes de qualidade para entrada, schema e dominios criticos.
+- Tratamento de erro para leitura e processamento do dataset.
+- Ponto unico de execucao via `main.py` e `amazon-sales-pipeline`.
+- Testes basicos cobrindo transformacoes, metricas e relatorio executivo.
 
-## Executive Summary
-The project addresses a strategic revenue efficiency problem: high discount leakage reduces net sales performance even when order volume is strong.
+## Estrutura
 
-For commercial leadership (Head of Sales, Revenue Operations, Category Managers), this solution delivers a reproducible analytics pipeline and an executive dashboard to prioritize margin-preserving growth.
-
-North Star Metric: **Net Revenue Retained (NRR)** = `net revenue / gross revenue before discounts`.
-
-Current baseline from the processed dataset:
-- Total net revenue: **$32.87M**
-- Discount leakage: **$5.05M**
-- Net Revenue Retained: **86.69%**
-- Expected uplift with 5% leakage recovery: **$252.3K**
-
-Business framing example: **Recovering only 5% of discount leakage can add ~$252K without increasing acquisition spend.**
-
-## Business Problem
-Amazon marketplace-style operations often optimize for volume but lose value through uncontrolled discounting.
-
-This project answers:
-- Where are discounts eroding revenue most?
-- Which categories create the largest recoverable value?
-- What is the financial upside of tighter discount governance?
-
-## Dataset
-- Source: Kaggle (`aliiihussain/amazon-sales-dataset`)
-- Link: https://www.kaggle.com/datasets/aliiihussain/amazon-sales-dataset
-- Scope: 50,000 transactions
-- Main entities: order, product category, price, discount, region, payment method, rating
-
-## Methodology
-1. Data ingestion with fallback logic for local execution.
-2. Data quality enforcement (schema checks, domain clipping, invalid-row removal).
-3. Feature engineering for business metrics (`gross_revenue`, `discount_value`, `NRR`).
-4. Opportunity ranking by category-level discount leakage.
-5. Executive dashboards and artifacts for decision support.
-
-## Architecture
 ```text
-amazon-sales-analysis/
-|-- app/
-|   |-- api.py
-|   `-- streamlit_app.py
-|-- assets/
-|   |-- amazon_logo.svg
-|   `-- custom.css
-|-- alerts/
-|   `-- discount_spike_alert.py
-|-- data/
-|   |-- raw/
-|   `-- processed/
-|-- docs/
-|   |-- README.en.md
-|   `-- README.pt-BR.md
-|-- notebooks/
-|-- reports/
-|   |-- figures/
-|   `-- tables/
-|-- Makefile
-|-- scenario_simulation.py
-|-- scripts/
-|   |-- run_alerts.py
-|   |-- run_pipeline.py
-|   `-- run_scenario_simulator.py
-|-- src/amazon_sales_analysis/
-|   |-- analytics.py
-|   |-- anomaly_detection.py
-|   |-- cli/
-|   |-- config.py
-|   |-- data_ingestion.py
-|   |-- data_preprocessing.py
-|   |-- eda.py
-|   |-- evaluation.py
-|   |-- feature_engineering.py
-|   |-- logging_config.py
-|   |-- modeling.py
-|   |-- scenario_simulator.py
-|   `-- visualization.py
-|-- tests/
-|-- main.py
-|-- pyproject.toml
-|-- requirements.txt
-`-- Dockerfile
+src/amazon_sales_analysis/
+|-- analytics.py            # wrappers leves para consumo externo
+|-- business_metrics.py     # catalogo e definicao dos KPIs
+|-- data_preprocessing.py   # leitura, limpeza, auditoria e erros de entrada
+|-- insights.py             # resumo automatico dos principais achados
+|-- metrics.py              # pacote central de metricas exportaveis
+|-- quality.py              # quality gates e sumario de validacao
+|-- sales_analysis.py       # analise comercial por categoria, produto e tendencia
+|-- table_organization.py   # tabelas executivas para consumo no app e reports
+`-- visualization.py        # fluxo de storytelling executivo
 ```
 
-## Results
-- Net revenue retained: **86.69%** (baseline)
-- Discount leakage identified: **$5.05M**
-- Highest-revenue category: **Beauty ($5.55M)**
-- Prioritized category opportunities exported to `reports/tables/discount_opportunities.csv`
-- Discount spike anomalies exported to `reports/tables/discount_spike_alerts.csv`
+## KPIs principais
 
-## Business Impact
-- 5% recovery scenario: **+$252.3K** net revenue
-- 10% recovery scenario: **+$504.7K** net revenue
-- Decision impact: supports discount policy redesign by category and promotional channel
+| KPI | Pergunta de negocio | Uso |
+|---|---|---|
+| Revenue total | Quanto a operacao gerou? | baseline executivo |
+| Ticket medio | Qual o valor medio por pedido? | eficiencia comercial |
+| Vendas por categoria | Onde o revenue esta concentrado? | priorizacao |
+| Produtos com maior contribuicao | Quais itens sustentam o resultado? | portfolio |
+| Tendencia temporal | O revenue esta acelerando ou caindo? | monitoramento |
+| Distribuicao de performance | O resultado esta pulverizado ou concentrado? | risco comercial |
 
-## Business Recommendations
-- Cap discount depth for high-leakage categories and monitor weekly NRR.
-- Shift campaign strategy from blanket discounts to category-specific thresholds.
-- Track `discount_to_revenue_ratio` as a governance KPI in leadership reviews.
-- Pilot policy in top 3 leakage categories before full rollout.
+O catalogo completo fica no modulo [`business_metrics.py`](/C:/Users/samue/PycharmProjects/amazon-sales-analysis/src/amazon_sales_analysis/business_metrics.py).
 
-## Action Playbook (Executive)
-| Priority | Action | Owner | Cadence | Trigger | Target |
-|---|---|---|---|---|---|
-| P1 | Apply discount caps in top leakage categories (Beauty, Books, Sports) | Revenue Ops + Category Managers | Weekly | `discount_to_revenue_ratio > 15%` | Recover 5% leakage |
-| P2 | Review anomaly alerts and freeze outlier campaigns | Sales Leadership | Weekly | `severity in {medium, high}` in spike alerts | Reduce avoidable leakage |
-| P3 | Recalibrate discount thresholds by category using simulation outputs | Head of Sales + FP&A | Monthly | `north_star_nrr < 87%` | Lift NRR trend |
-| P4 | Scale pilot policy from top 3 categories to full portfolio | Revenue Ops | Quarterly | Pilot reaches recovery target | Institutionalize governance |
+## Fluxo analitico
 
-Execution artifacts:
-- `reports/tables/discount_opportunities.csv`
-- `reports/tables/discount_spike_alerts.csv`
-- `reports/tables/scenario_simulation_summary.json`
+1. Leitura segura do dataset com mensagens claras para arquivo ausente, vazio ou invalido.
+2. Validacao de schema e colunas obrigatorias.
+3. Limpeza e normalizacao das variaveis de receita, desconto e rating.
+4. Calculo centralizado de KPIs e visoes de negocio.
+5. Geração de tabelas executivas, visual storytelling e insights automaticos.
+6. Exportacao de metricas, alertas e artefatos para `reports/`.
 
-## Scenario Simulation Snapshot
-Based on `reports/tables/scenario_simulation_summary.json` (5% default leakage recovery):
+## Saidas principais
 
-| Metric | Baseline | Simulated | Delta |
-|---|---:|---:|---:|
-| Net Revenue | $32.87M | $33.12M | **+$252.3K** |
-| NRR | 86.69% | 87.35% | **+0.66 p.p.** |
-| Gross Revenue | $37.91M | $37.91M | - |
+- `reports/tables/kpi_summary.csv`
+- `reports/tables/category_performance.csv`
+- `reports/tables/product_contribution.csv`
+- `reports/tables/monthly_trend.csv`
+- `reports/tables/performance_distribution.csv`
+- `reports/tables/executive_insights.csv`
+- `reports/metrics/product_metrics.json`
+- `reports/figures/sales_trend_over_time.png`
+- `reports/figures/top_categories_by_sales.png`
+- `reports/figures/product_contribution.png`
+- `reports/figures/performance_distribution.png`
 
-Top category uplifts from `reports/tables/scenario_simulation_breakdown.csv`:
+## Interface executiva
 
-| Category | Expected Uplift |
-|---|---:|
-| Beauty | $42.7K |
-| Books | $42.5K |
-| Sports | $42.3K |
+O app Streamlit foi reorganizado com hierarquia de leitura:
 
-Visual view (5% scenario):
-```text
-Net Revenue (USD M)
-Baseline  | ################################ 32.87
-Simulated | ################################# 33.12
-Gain      | +0.25M
-```
+1. Resumo executivo com KPIs e principais achados.
+2. Drivers de performance com categorias, produtos lideres e distribuicao.
+3. Qualidade dos dados de entrada.
+4. Catalogo de KPIs documentado para contexto de negocio.
 
-## Tech Stack
-Python, Pandas, Plotly, Streamlit, FastAPI, Seaborn, Matplotlib, Pytest.
+Arquivo principal do app: [`app/streamlit_app.py`](/C:/Users/samue/PycharmProjects/amazon-sales-analysis/app/streamlit_app.py)
 
-## Quickstart
+## Como executar
+
 ```bash
-git clone https://github.com/samuelmaia-analytics/amazon-sales-analysis.git
-cd amazon-sales-analysis
 python -m pip install -e .[dev]
-pre-commit install
-make pipeline
-uvicorn app.api:app --reload
-streamlit run app/streamlit_app.py
+python main.py
 ```
 
-## How to Run
-### Local
-```bash
-git clone https://github.com/samuelmaia-analytics/amazon-sales-analysis.git
-cd amazon-sales-analysis
-python -m pip install -e .[dev]
-python -m amazon_sales_analysis.cli.pipeline
-streamlit run app/streamlit_app.py
-uvicorn app.api:app --reload
-make pipeline
-make alerts
-make scenario
-```
-
-### Cron Example (Operational Alerts)
-```bash
-0 8 * * 1-5 cd /path/to/amazon-sales-analysis && make alerts
-```
-
-### Docker
-```bash
-docker build -t amazon-sales-analytics .
-docker run --rm -p 8501:8501 amazon-sales-analytics
-```
-
-### Console Scripts
-After installation, the package exposes:
+Ou pelos entry points:
 
 ```bash
 amazon-sales-pipeline
-amazon-sales-alerts
-amazon-sales-scenario
-```
-
-## API Examples
-Base URL (local): `http://127.0.0.1:8000`
-
-```bash
-uvicorn app.api:app --reload
-```
-
-`GET /api/v1/revenue_metrics`
-```json
-{
-  "total_revenue": 32866579.536,
-  "gross_revenue": 37913104.54000001,
-  "discount_leakage": 5046525.004000008,
-  "north_star_nrr": 0.866892330099855,
-  "total_orders": 50000.0,
-  "avg_ticket": 657.33159072
-}
-```
-
-`GET /metrics/opportunities` (sample)
-```json
-[
-  {
-    "product_category": "Beauty",
-    "total_revenue": 5550626.229,
-    "discount_value": 854360.231,
-    "discount_to_revenue_ratio": 0.15392141278335028
-  }
-]
-```
-
-`GET /alerts/discount-spikes` (sample)
-```json
-[
-  {
-    "order_date": "2022-10-31",
-    "product_category": "Fashion",
-    "avg_discount_percent": 21.363636363636363,
-    "z_score": 2.696544107570046,
-    "estimated_leakage_usd": 933.6917756183568,
-    "severity": "medium"
-  }
-]
-```
-
-## Visual Snapshots
-![Sales Trend](reports/figures/sales_trend_over_time.png)
-![Top Categories](reports/figures/top_categories_by_sales.png)
-
-## Quality and Contracts
-- Raw data contract is versioned at `contracts/sales_dataset.contract.json`.
-- Product metrics contract is versioned at `contracts/product_metrics.contract.json`.
-- Pipeline enforces:
-  - required schema on raw data
-  - clean-data quality gates (domain and invalid-value checks)
-  - product metrics generation in `reports/metrics/product_metrics.json`
-  - pipeline provenance with `pipeline_version` in metrics artifacts
-
-### Local Quality Commands
-```bash
-python -m pip install -e .[dev]
-pre-commit run --all-files
-black --check .
-isort --check-only .
-ruff check .
-mypy src scripts app alerts
+streamlit run app/streamlit_app.py
 pytest
 ```
 
-## CI and Metrics
-- CI workflow: `.github/workflows/ci.yml`
-- Gates: formatting, lint, type checking, tests and coverage threshold (`>=70%`).
-- Python version matrix: `3.12` and `3.13`.
-- Local git hooks available via `.pre-commit-config.yaml`.
-- CI artifacts exported in `reports/metrics/`:
-  - `pytest-results.xml`
-  - `coverage.xml`
+## Decisoes de senioridade incorporadas
 
-## Release Process
-1. Update changelog with a new section in `CHANGELOG.md` (format `## [x.y.z] - YYYY-MM-DD`).
-2. Bump package version:
-   ```bash
-   python scripts/bump_version.py 1.0.0
-   ```
-3. Commit, tag and push:
-   ```bash
-   git add .
-   git commit -m "chore(release): v1.0.0"
-   git tag v1.0.0
-   git push origin main --tags
-   ```
-4. The release workflow validates version/changelog consistency and publishes GitHub release.
+- O framing foi trocado de "analise exploratoria" para "monitoramento de performance comercial".
+- Os KPIs agora estao ligados a perguntas executivas, nao apenas a agregacoes tecnicas.
+- Categoria, contribuicao de produtos e tendencia temporal foram modeladas como drivers de decisao.
+- O relatorio passou a destacar segmentos e tendencias acionaveis em vez de apenas exibir graficos.
 
-## Repository Governance
-- Pull requests follow `.github/PULL_REQUEST_TEMPLATE.md`.
-- New work should start from an issue using `.github/ISSUE_TEMPLATE/`.
-- Commits follow conventional prefixes such as `feat`, `fix`, `docs`, `chore`, `refactor` and `test`.
+## Testes
 
-## Decision Cadence
-- Weekly: monitor `north_star_nrr` + `discount_leakage` and review anomaly alerts in `reports/tables/discount_spike_alerts.csv`.
-- Monthly: review and recalibrate discount thresholds by category using scenario simulation outputs.
+Cobertura minima adicionada para:
 
-## Future Improvements
-- Add model-based threshold recommendations per category (beyond static policy ranges).
-- Add API authentication and rate limiting for production BI integration.
+- limpeza e validacao de dados
+- calculo de metricas centrais
+- montagem do relatorio executivo
+- exportacao de visualizacoes principais
 
-## Versioning Convention
-Use semantic commit messages:
-- `feat: add feature engineering pipeline`
-- `fix: correct discount leakage calculation`
-- `docs: improve executive summary for international recruiters`
+Arquivos de teste relevantes:
 
-## Author
-Samuel Maia
-- GitHub: https://github.com/samuelmaia-analytics
-- LinkedIn: https://linkedin.com/in/samuelmaia-analytics
-- Email: smaia2@gmail.com
+- [`tests/test_data_preprocessing.py`](/C:/Users/samue/PycharmProjects/amazon-sales-analysis/tests/test_data_preprocessing.py)
+- [`tests/test_metrics.py`](/C:/Users/samue/PycharmProjects/amazon-sales-analysis/tests/test_metrics.py)
+- [`tests/test_sales_analysis.py`](/C:/Users/samue/PycharmProjects/amazon-sales-analysis/tests/test_sales_analysis.py)
+- [`tests/test_table_organization.py`](/C:/Users/samue/PycharmProjects/amazon-sales-analysis/tests/test_table_organization.py)
 
+## Resultado esperado do case
 
+Um projeto simples de entender, mas com estrutura de portfolio senior:
 
-
+- reproducivel
+- orientado a negocio
+- testavel
+- com camada analitica centralizada
+- com narrativa executiva clara

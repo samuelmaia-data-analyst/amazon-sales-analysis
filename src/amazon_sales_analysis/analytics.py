@@ -1,27 +1,20 @@
-﻿import pandas as pd
+import pandas as pd
 
-from .feature_engineering import build_features
+from .sales_analysis import compute_kpi_summary, prepare_sales_frame
 
 
 def add_derived_metrics(df: pd.DataFrame) -> pd.DataFrame:
-    return build_features(df)
+    return prepare_sales_frame(df)
 
 
 def summarize_kpis(df: pd.DataFrame) -> dict[str, float]:
-    orders = float(df["order_id"].nunique()) if not df.empty else 0.0
-    revenue = float(df["total_revenue"].sum())
-    units = float(df["quantity_sold"].sum())
-    gross_revenue = (
-        float(df["gross_revenue"].sum())
-        if "gross_revenue" in df
-        else float((df["price"] * df["quantity_sold"]).sum())
-    )
-
+    summary = compute_kpi_summary(prepare_sales_frame(df))
+    lookup = dict(zip(summary["metric"], summary["value"], strict=False))
     return {
-        "total_revenue": revenue,
-        "total_orders": orders,
-        "total_units": units,
-        "avg_ticket": revenue / orders if orders else 0.0,
-        "avg_rating": float(df["rating"].mean()) if not df.empty else 0.0,
-        "net_revenue_retained": (revenue / gross_revenue) if gross_revenue else 0.0,
+        "total_revenue": float(lookup.get("total_revenue", 0.0)),
+        "total_orders": float(lookup.get("total_orders", 0.0)),
+        "total_units": float(lookup.get("total_units", 0.0)),
+        "avg_ticket": float(lookup.get("avg_order_value", 0.0)),
+        "avg_rating": float(lookup.get("avg_rating", 0.0)),
+        "net_revenue_retained": float(lookup.get("net_revenue_retained", 0.0)),
     }

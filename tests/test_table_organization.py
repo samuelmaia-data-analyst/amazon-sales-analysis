@@ -31,9 +31,11 @@ def test_build_executive_tables_returns_expected_tables() -> None:
     expected_keys = {
         "kpi_summary",
         "category_performance",
-        "regional_performance",
-        "payment_performance",
+        "product_contribution",
         "monthly_trend",
+        "performance_distribution",
+        "insights_summary",
+        "kpi_catalog",
         "data_quality_audit",
     }
 

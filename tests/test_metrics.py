@@ -43,6 +43,8 @@ def test_collect_product_metrics_has_core_fields() -> None:
     assert metrics["raw_row_count"] == 2
     assert metrics["clean_row_count"] == 2
     assert "north_star_nrr" in metrics
+    assert "avg_ticket" in metrics
+    assert "headline_insights" in metrics
 
 
 def test_save_product_metrics_writes_json(tmp_path) -> None:

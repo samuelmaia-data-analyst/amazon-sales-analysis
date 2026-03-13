@@ -37,6 +37,9 @@ def test_visualization_exports_expected_figures(tmp_path: Path, monkeypatch) -> 
     monkeypatch.setattr(visualization, "FIGURES_DIR", tmp_path)
     visualization.sales_trend_over_time(frame)
     visualization.top_categories_by_sales(frame, top_n=2)
+    visualization.build_storytelling_visuals(frame)
 
     assert (tmp_path / "sales_trend_over_time.png").exists()
     assert (tmp_path / "top_categories_by_sales.png").exists()
+    assert (tmp_path / "product_contribution.png").exists()
+    assert (tmp_path / "performance_distribution.png").exists()

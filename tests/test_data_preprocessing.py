@@ -1,7 +1,11 @@
 ﻿import pandas as pd
 import pytest
 
-from amazon_sales_analysis.data_preprocessing import clean_sales_data, validate_raw_sales_data
+from amazon_sales_analysis.data_preprocessing import (
+    clean_sales_data,
+    read_sales_dataset,
+    validate_raw_sales_data,
+)
 
 
 def _base_df() -> pd.DataFrame:
@@ -50,3 +54,10 @@ def test_pandera_schema_validation_rejects_invalid_quantity() -> None:
 
     with pytest.raises(ValueError, match="pandera"):
         validate_raw_sales_data(invalid_df)
+
+
+def test_read_sales_dataset_raises_clear_error_for_missing_file(tmp_path) -> None:
+    missing_path = tmp_path / "missing.csv"
+
+    with pytest.raises(FileNotFoundError, match="Arquivo de vendas nao encontrado"):
+        read_sales_dataset(missing_path)

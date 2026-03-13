@@ -7,8 +7,10 @@ from pathlib import Path
 import pandas as pd
 
 from .config import METRICS_DIR
+from .insights import generate_executive_insights
+from .sales_analysis import build_executive_report, prepare_sales_frame
 
-PRODUCT_METRICS_VERSION = "1.0.0"
+PRODUCT_METRICS_VERSION = "2.0.0"
 
 
 def collect_product_metrics(
@@ -18,18 +20,18 @@ def collect_product_metrics(
     *,
     contract_version: str,
     pipeline_version: str = "unknown",
-) -> dict[str, float | int | str]:
-    gross_revenue = float(df_featured["gross_revenue"].sum()) if not df_featured.empty else 0.0
-    total_revenue = float(df_featured["total_revenue"].sum()) if not df_featured.empty else 0.0
-    discount_leakage = gross_revenue - total_revenue
-    nrr = (total_revenue / gross_revenue) if gross_revenue else 0.0
+) -> dict[str, float | int | str | list[dict[str, str]]]:
+    prepared = prepare_sales_frame(df_featured)
+    insights = generate_executive_insights(prepared)
+    report = build_executive_report(prepared, insights)
+    kpi_lookup = dict(zip(report.kpi_summary["metric"], report.kpi_summary["value"], strict=False))
 
-    min_date = df_featured["order_date"].min()
-    max_date = df_featured["order_date"].max()
+    min_date = prepared["order_date"].min()
+    max_date = prepared["order_date"].max()
     date_start = min_date.date().isoformat() if pd.notna(min_date) else ""
     date_end = max_date.date().isoformat() if pd.notna(max_date) else ""
 
-    metrics: dict[str, float | int | str] = {
+    metrics: dict[str, float | int | str | list[dict[str, str]]] = {
         "metrics_version": PRODUCT_METRICS_VERSION,
         "contract_version": contract_version,
         "pipeline_version": pipeline_version,
@@ -38,24 +40,24 @@ def collect_product_metrics(
         "clean_row_count": int(len(df_clean)),
         "rows_dropped": int(len(df_raw) - len(df_clean)),
         "row_retention_rate": (float(len(df_clean)) / float(len(df_raw))) if len(df_raw) else 0.0,
-        "total_revenue": total_revenue,
-        "gross_revenue": gross_revenue,
-        "discount_leakage": discount_leakage,
-        "north_star_nrr": nrr,
-        "unique_orders": int(df_featured["order_id"].nunique()) if "order_id" in df_featured else 0,
+        "total_revenue": float(kpi_lookup.get("total_revenue", 0.0)),
+        "gross_revenue": float(prepared["gross_revenue"].sum()) if not prepared.empty else 0.0,
+        "discount_leakage": float(kpi_lookup.get("discount_leakage", 0.0)),
+        "north_star_nrr": float(kpi_lookup.get("net_revenue_retained", 0.0)),
+        "total_orders": int(kpi_lookup.get("total_orders", 0.0)),
+        "avg_ticket": float(kpi_lookup.get("avg_order_value", 0.0)),
         "unique_categories": (
-            int(df_featured["product_category"].nunique())
-            if "product_category" in df_featured
-            else 0
+            int(prepared["product_category"].nunique()) if "product_category" in prepared else 0
         ),
         "period_start": date_start,
         "period_end": date_end,
+        "headline_insights": insights.to_dict(orient="records"),
     }
     return metrics
 
 
 def save_product_metrics(
-    metrics: dict[str, float | int | str], output_path: Path | None = None
+    metrics: dict[str, float | int | str | list[dict[str, str]]], output_path: Path | None = None
 ) -> Path:
     METRICS_DIR.mkdir(parents=True, exist_ok=True)
     target = output_path or (METRICS_DIR / "product_metrics.json")

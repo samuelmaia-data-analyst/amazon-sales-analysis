@@ -12,11 +12,22 @@ RAW_FILENAME = "amazon_sales_dataset.csv"
 PROCESSED_FILENAME = "amazon_sales_clean.csv"
 
 
+def read_sales_dataset(path: Path) -> pd.DataFrame:
+    try:
+        return pd.read_csv(path)
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"Arquivo de vendas nao encontrado: {path}") from exc
+    except pd.errors.EmptyDataError as exc:
+        raise ValueError(f"Arquivo de vendas vazio ou invalido: {path}") from exc
+    except Exception as exc:
+        raise ValueError(f"Falha ao ler arquivo de vendas em {path}: {exc}") from exc
+
+
 def load_raw_sales_data(raw_subdir: str = RAW_SUBDIR, filename: str = RAW_FILENAME) -> pd.DataFrame:
     source_path = RAW_DATA_DIR / raw_subdir / filename
     if not source_path.exists():
-        raise FileNotFoundError(f"Arquivo bruto não encontrado: {source_path}")
-    return pd.read_csv(source_path)
+        raise FileNotFoundError(f"Arquivo bruto nao encontrado: {source_path}")
+    return read_sales_dataset(source_path)
 
 
 def clean_sales_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -58,6 +69,27 @@ def validate_raw_sales_data(df: pd.DataFrame) -> pd.DataFrame:
         return cast(pd.DataFrame, validated)
     except Exception as exc:
         raise ValueError(f"Falha na validacao do schema com pandera: {exc}") from exc
+
+
+def audit_data_quality(df: pd.DataFrame) -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "check": [
+                "row_count",
+                "null_values",
+                "duplicated_order_id",
+                "discount_out_of_range",
+                "rating_out_of_range",
+            ],
+            "value": [
+                len(df),
+                int(df.isna().sum().sum()),
+                int(df["order_id"].duplicated().sum()),
+                int(((df["discount_percent"] < 0) | (df["discount_percent"] > 100)).sum()),
+                int(((df["rating"] < 0) | (df["rating"] > 5)).sum()),
+            ],
+        }
+    )
 
 
 def save_processed_data(df: pd.DataFrame, filename: str = PROCESSED_FILENAME) -> Path:

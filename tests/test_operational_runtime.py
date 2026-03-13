@@ -181,13 +181,12 @@ def test_pipeline_cli_main_orchestrates_pipeline_outputs(tmp_path, monkeypatch) 
     clean_df = pd.DataFrame({"order_id": [1], "price": [100.0]})
     featured_df = pd.DataFrame({"order_id": [1], "total_revenue": [90.0]})
     alerts_df = pd.DataFrame({"product_category": ["Beauty"], "severity": ["high"]})
-    executive_summary = pd.DataFrame({"metric": ["nrr"], "value": [0.9]})
-    opportunities = pd.DataFrame({"product_category": ["Beauty"], "discount_value": [10.0]})
     recommendations = pd.DataFrame({"owner": ["Revenue Ops"], "action": ["Cap discounts"]})
     organized_tables = {
-        "regional_performance": pd.DataFrame({"region": ["North"], "revenue": [90.0]}),
-        "payment_performance": pd.DataFrame({"payment": ["Card"], "revenue": [90.0]}),
+        "category_performance": pd.DataFrame({"product_category": ["Beauty"], "revenue": [90.0]}),
+        "product_contribution": pd.DataFrame({"product_id": [1], "revenue": [90.0]}),
     }
+    insights = pd.DataFrame({"headline": ["Revenue baseline"], "insight": ["..."]})
 
     contract_path = tmp_path / "contracts" / "snapshot.json"
     metrics_path = tmp_path / "metrics" / "product_metrics.json"
@@ -212,12 +211,14 @@ def test_pipeline_cli_main_orchestrates_pipeline_outputs(tmp_path, monkeypatch) 
     monkeypatch.setattr(pipeline_cli, "clean_sales_data", lambda frame: clean_df)
     monkeypatch.setattr(pipeline_cli, "enforce_clean_quality_gates", lambda frame: None)
     monkeypatch.setattr(pipeline_cli, "save_processed_data", lambda frame: processed_path)
-    monkeypatch.setattr(pipeline_cli, "build_features", lambda frame: featured_df)
-    monkeypatch.setattr(pipeline_cli, "basic_eda", lambda frame: None)
-    monkeypatch.setattr(pipeline_cli, "sales_trend_over_time", lambda frame: None)
-    monkeypatch.setattr(pipeline_cli, "top_categories_by_sales", lambda frame: None)
-    monkeypatch.setattr(pipeline_cli, "build_executive_summary", lambda frame: executive_summary)
-    monkeypatch.setattr(pipeline_cli, "rank_discount_opportunities", lambda frame: opportunities)
+    monkeypatch.setattr(pipeline_cli, "prepare_sales_frame", lambda frame: featured_df)
+    monkeypatch.setattr(pipeline_cli, "generate_executive_insights", lambda frame: insights)
+    monkeypatch.setattr(
+        pipeline_cli,
+        "build_executive_report",
+        lambda frame, report_insights: types.SimpleNamespace(insights=report_insights),
+    )
+    monkeypatch.setattr(pipeline_cli, "build_storytelling_visuals", lambda frame: None)
     monkeypatch.setattr(pipeline_cli, "build_actionable_recommendations", lambda frame: recommendations)
     monkeypatch.setattr(pipeline_cli, "build_executive_tables", lambda frame: organized_tables)
     monkeypatch.setattr(
@@ -235,9 +236,8 @@ def test_pipeline_cli_main_orchestrates_pipeline_outputs(tmp_path, monkeypatch) 
 
     pipeline_cli.main()
 
-    assert (tables_dir / "executive_summary.csv").exists()
-    assert (tables_dir / "discount_opportunities.csv").exists()
     assert (tables_dir / "actionable_recommendations.csv").exists()
-    assert (tables_dir / "regional_performance.csv").exists()
-    assert (tables_dir / "payment_performance.csv").exists()
+    assert (tables_dir / "executive_insights.csv").exists()
+    assert (tables_dir / "category_performance.csv").exists()
+    assert (tables_dir / "product_contribution.csv").exists()
     assert any("Pipeline completed successfully" in message for message in logged_messages)
