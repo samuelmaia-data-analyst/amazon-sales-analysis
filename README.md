@@ -59,7 +59,7 @@ O catalogo completo fica no modulo [`business_metrics.py`](/C:/Users/samue/Pycha
 2. Validacao de schema e colunas obrigatorias.
 3. Limpeza e normalizacao das variaveis de receita, desconto e rating.
 4. Calculo centralizado de KPIs e visoes de negocio.
-5. Geração de tabelas executivas, visual storytelling e insights automaticos.
+5. Geracao de tabelas executivas, visual storytelling e insights automaticos.
 6. Exportacao de metricas, alertas e artefatos para `reports/`.
 
 ## Saidas principais
@@ -97,6 +97,7 @@ python main.py
 Ou pelos entry points:
 
 ```bash
+python -m pip install .
 amazon-sales-pipeline
 streamlit run app/streamlit_app.py
 pytest

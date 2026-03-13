@@ -37,6 +37,7 @@ streamlit run app/streamlit_app.py
 
 ## Console Scripts
 ```bash
+python -m pip install .
 amazon-sales-pipeline
 amazon-sales-alerts
 amazon-sales-scenario

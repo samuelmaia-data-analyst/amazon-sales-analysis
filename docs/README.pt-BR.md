@@ -5,24 +5,24 @@
 - International: [README.en.md](README.en.md)
 
 ## Resumo
-- Problema de negócio: leakage de desconto reduzindo a receita líquida.
-- Público-alvo: liderança comercial, gestores de categoria e operações.
+- Problema de negocio: leakage de desconto reduzindo a receita liquida.
+- Publico-alvo: lideranca comercial, gestores de categoria e operacoes.
 - North Star Metric: Net Revenue Retained (NRR).
 - Potencial financeiro: +$252,3K ao recuperar 5% do leakage.
 
-## Snapshot de Métricas
-- Receita Líquida: **$32,87M**
+## Snapshot de Metricas
+- Receita Liquida: **$32,87M**
 - Leakage de Desconto: **$5,05M**
 - North Star (NRR): **86,69%**
-- Upside com 5% de recuperação: **+$252,3K**
+- Upside com 5% de recuperacao: **+$252,3K**
 
 ## Escopo do Projeto
-Este projeto entrega uma stack analítica orientada a negócio para operações de vendas no estilo Amazon:
-- pipeline reproduzível com contratos de schema e quality gates;
-- feature engineering para KPIs executivos e métricas de leakage;
-- endpoints FastAPI para métricas consolidadas e alertas operacionais;
-- dashboard Streamlit com seleção de idioma `International` e `PT-BR`;
-- simulador de cenários e alertas de anomalia para revisão executiva.
+Este projeto entrega uma stack analitica orientada a negocio para operacoes de vendas no estilo Amazon:
+- pipeline reproduzivel com contratos de schema e quality gates;
+- feature engineering para KPIs executivos e metricas de leakage;
+- endpoints FastAPI para metricas consolidadas e alertas operacionais;
+- dashboard Streamlit com selecao de idioma `International` e `PT-BR`;
+- simulador de cenarios e alertas de anomalia para revisao executiva.
 
 ## Como Executar
 ```bash
@@ -37,6 +37,7 @@ streamlit run app/streamlit_app.py
 
 ## Scripts de Console
 ```bash
+python -m pip install .
 amazon-sales-pipeline
 amazon-sales-alerts
 amazon-sales-scenario
@@ -53,11 +54,11 @@ mypy src scripts app alerts tests
 pytest
 ```
 
-## CI e Governança
-- A CI valida formatação, lint, tipagem, testes e cobertura (`>=70%`).
-- O workflow de release verifica consistência entre versão e changelog antes de publicar.
-- Templates de PR e issue estão disponíveis em `.github/`.
-- CODEOWNERS foi configurado para governança do repositório.
+## CI e Governanca
+- A CI valida formatacao, lint, tipagem, testes e cobertura (`>=70%`).
+- O workflow de release verifica consistencia entre versao e changelog antes de publicar.
+- Templates de PR e issue estao disponiveis em `.github/`.
+- CODEOWNERS foi configurado para governanca do repositorio.
 
 ## Exemplos de API
 `GET /api/v1/revenue_metrics` (exemplo)
