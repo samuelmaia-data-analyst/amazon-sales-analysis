@@ -30,6 +30,10 @@ def format_currency(value: float) -> str:
     return f"${value:,.0f}"
 
 
+def format_percent(value: float) -> str:
+    return f"{value * 100:.2f}%"
+
+
 def main() -> None:
     st.title("Amazon Commercial Performance Monitor")
     st.caption(
@@ -70,14 +74,42 @@ def main() -> None:
         )
         st.plotly_chart(trend_fig, use_container_width=True)
 
+        category_chart_data = report.category_performance.head(8).copy()
+        category_chart_data = category_chart_data.sort_values("revenue_share", ascending=True)
+        category_chart_data["revenue_share_label"] = category_chart_data["revenue_share"].map(
+            format_percent
+        )
+        top_category = category_chart_data["product_category"].iloc[-1]
+        category_chart_data["category_highlight"] = category_chart_data["product_category"].eq(
+            top_category
+        )
+
         category_fig = px.bar(
-            report.category_performance.head(8),
-            x="revenue",
+            category_chart_data,
+            x="revenue_share",
             y="product_category",
             orientation="h",
             title="Story 2: Categorias que sustentam o revenue",
-            color="discount_pressure",
-            color_continuous_scale="Oranges",
+            text="revenue_share_label",
+            color="category_highlight",
+            color_discrete_map={True: "#ff8c42", False: "#ffd9bf"},
+            hover_data={
+                "revenue_share_label": False,
+                "revenue_share": ":.2%",
+                "revenue": ":,.0f",
+                "orders": ":,.0f",
+                "units": ":,.0f",
+                "avg_order_value": ":,.2f",
+                "discount_pressure": ":.2%",
+                "category_highlight": False,
+            },
+        )
+        category_fig.update_traces(textposition="outside")
+        category_fig.update_layout(
+            showlegend=False,
+            xaxis_title="Participacao no revenue",
+            yaxis_title="Categoria",
+            xaxis_tickformat=".0%",
         )
         st.plotly_chart(category_fig, use_container_width=True)
 
